@@ -26,6 +26,7 @@ class AppBottomBar extends StatelessWidget {
     (label: 'Главная', icon: Icons.home_outlined),
     (label: 'Дневник', icon: Icons.edit_note_outlined),
     (label: 'Практики', icon: Icons.spa_outlined),
+    (label: 'Специалист', icon: Icons.support_agent_outlined),
     (label: 'Настройки', icon: Icons.tune_outlined),
   ];
 

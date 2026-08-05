@@ -39,10 +39,10 @@ void main() {
       });
     }
 
-    test('вкладок ровно четыре', () {
-      expect(AppBottomBar.tabs.length, 4);
+    test('вкладок ровно пять, в заданном порядке', () {
+      expect(AppBottomBar.tabs.length, 5);
       expect(AppBottomBar.tabs.map((t) => t.label).toList(),
-          ['Главная', 'Дневник', 'Практики', 'Настройки']);
+          ['Главная', 'Дневник', 'Практики', 'Специалист', 'Настройки']);
     });
 
     testWidgets('все вкладки равны — ни одной заливки', (tester) async {
@@ -128,10 +128,35 @@ void main() {
   group('Ни один раздел не остался без входа', () {
     String read(String p) => File(p).readAsStringSync();
 
-    test('«Практики» держат библиотеку и специалиста', () {
+    test('«Практики» держат библиотеку', () {
       final s = read('lib/features/practices/practices_screen.dart');
       expect(s.contains("'/library'"), isTrue);
-      expect(s.contains("'/help'"), isTrue);
+    });
+
+    test('специалист достижим и вкладкой, и из глубины', () {
+      final r = read('lib/app/router.dart');
+      // Вкладка — «зайти посмотреть». /specialist — вход из кризисного
+      // экрана и ответа «выговориться», откуда нужен возврат назад.
+      expect(r.contains("path: '/help'"), isTrue);
+      expect(r.contains("path: '/specialist'"), isTrue);
+
+      for (final f in const [
+        'lib/features/vent/crisis_screen.dart',
+        'lib/features/vent/vent_response_screen.dart',
+      ]) {
+        expect(
+          read(f).contains("push('/help')"),
+          isFalse,
+          reason: '$f пушит ветку оболочки — бар вылезет поверх экрана',
+        );
+      }
+    });
+
+    test('состояния в «Практиках» сворачиваются', () {
+      final s = read('lib/features/practices/practices_screen.dart');
+      expect(s.contains('SosTrigger? _open'), isTrue,
+          reason: 'открытым может быть только одно состояние');
+      expect(s.contains('AnimatedSize'), isTrue);
     });
 
     test('«Путь» держит опросники и «что я заметила»', () {
@@ -178,14 +203,27 @@ void main() {
       );
     });
 
-    test('экран выбора предлагает оба способа и различает их по приватности',
-        () {
+    test('экран выбора предлагает оба способа', () {
       final s = read('lib/features/vent/vent_choice_screen.dart');
       expect(s.contains("'/vent/voice'"), isTrue);
       expect(s.contains("'/vent/text'"), isTrue);
-      // Знак «уходит на сервер» ровно один: текст никуда не уходит,
-      // и уравнивать их значило бы врать в обе стороны.
-      expect(RegExp(r'leavesDevice: true').allMatches(s).length, 1);
+    });
+
+    test('знак «уходит на сервер» нигде не проставлен безусловно', () {
+      // Знак должен зависеть от того, умеет ли телефон распознавать
+      // речь сам. Захардкоженный `leavesDevice: true` означал бы, что
+      // мы пугаем человека там, где ничего не уходит.
+      for (final p in const [
+        'lib/features/vent/vent_choice_screen.dart',
+        'lib/features/vent/voice_vent_screen.dart',
+        'lib/features/diary/diary_list_screen.dart',
+      ]) {
+        expect(
+          RegExp(r'leavesDevice: true').hasMatch(read(p)),
+          isFalse,
+          reason: '$p проставляет знак не глядя на телефон',
+        );
+      }
     });
 
     test('старые адреса ведут туда, где содержимое теперь живёт', () {

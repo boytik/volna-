@@ -88,6 +88,11 @@ final appRouter = GoRouter(
         ),
         StatefulShellBranch(
           routes: [
+            GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
             GoRoute(
               path: '/settings',
               builder: (_, _) => const SettingsScreen(),
@@ -98,6 +103,11 @@ final appRouter = GoRouter(
     ),
 
     GoRoute(path: '/privacy', builder: (_, _) => const PrivacyScreen()),
+
+    // Тот же экран специалиста, но пушится поверх оболочки: сюда
+    // приходят из кризисного экрана и из ответа «выговориться»,
+    // откуда нужно вернуться назад, а не сменить вкладку.
+    GoRoute(path: '/specialist', builder: (_, _) => const HelpScreen()),
 
     // «Путь» — календарь, знаки, опросники и инсайты одним экраном.
     // Вход один: правый верхний угол главной.

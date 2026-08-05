@@ -4,20 +4,49 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/leaves_device_mark.dart';
+import '../../services/on_device_transcribe_service.dart';
 
 /// «Выговориться» — выбор способа: голосом или текстом.
 ///
 /// Раньше в дневнике стояли две строки, и человеку приходилось решать
 /// ещё до входа. Теперь вход один, а выбор здесь — и рядом с ним видно
-/// то, чего иначе не узнать: **голос уходит на сервер, текст остаётся
-/// на телефоне**. Это не мелкая деталь для этой аудитории, и она должна
-/// стоять до нажатия, а не всплывать после.
-class VentChoiceScreen extends StatelessWidget {
+/// то, чего иначе не узнать: что именно покидает телефон.
+///
+/// Ответ на это зависит от телефона. Если система распознаёт речь сама,
+/// аудио не уходит никуда, и знак «уходит на сервер» не показывается —
+/// иначе он перестанет что-либо значить. Поэтому экран спрашивает
+/// платформу до того, как что-то показать.
+class VentChoiceScreen extends StatefulWidget {
   const VentChoiceScreen({super.key});
+
+  @override
+  State<VentChoiceScreen> createState() => _VentChoiceScreenState();
+}
+
+class _VentChoiceScreenState extends State<VentChoiceScreen> {
+  final _onDevice = OnDeviceTranscribeService();
+
+  /// null — ещё не знаем. Пока не знаем, про приватность молчим:
+  /// сказать неточно хуже, чем подождать сотню миллисекунд.
+  bool? _voiceStaysOnDevice;
+
+  @override
+  void initState() {
+    super.initState();
+    _probe();
+  }
+
+  Future<void> _probe() async {
+    final onDevice = await _onDevice.supportsOnDevice();
+    if (!mounted) return;
+    setState(() => _voiceStaysOnDevice = onDevice);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final known = _voiceStaysOnDevice != null;
+    final local = _voiceStaysOnDevice ?? false;
 
     return Scaffold(
       appBar: AppBar(
@@ -47,10 +76,17 @@ class VentChoiceScreen extends StatelessWidget {
             _Way(
               icon: Icons.mic_none_rounded,
               title: 'Голосом',
-              note: 'Зажми кнопку и говори. До 90 секунд — '
-                  'иногда сказать легче, чем написать.',
+              note: !known
+                  ? 'Зажми кнопку и говори. До 90 секунд.'
+                  : local
+                      ? 'Зажми кнопку и говори. До 90 секунд. Речь '
+                          'распознаётся прямо на телефоне — запись никуда '
+                          'не уходит.'
+                      : 'Зажми кнопку и говори. До 90 секунд. Этот телефон '
+                          'не умеет распознавать речь без интернета, поэтому '
+                          'запись уйдёт на расшифровку.',
               route: '/vent/voice',
-              leavesDevice: true,
+              leavesDevice: known && !local,
             ),
             _Way(
               icon: Icons.keyboard_outlined,

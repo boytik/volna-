@@ -32,17 +32,31 @@ class _HelpScreenState extends State<HelpScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Экран живёт в двух ролях. Как вкладка «Специалист» он корневой —
+    // кнопки «назад» там быть не должно, уходят другой вкладкой. Как
+    // `/specialist` он пушится из кризисного экрана и из ответа
+    // «выговориться», и вернуться назад обязательно нужно: человек
+    // пришёл сюда из разговора, а не из меню.
+    final canGoBack = context.canPop();
+
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      appBar: canGoBack
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              ),
+            )
+          : null,
       body: SafeArea(
-        top: false,
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            AppSpacing.lg,
+            AppSpacing.axis,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Связь со специалистом', style: theme.textTheme.displayLarge),
             const SizedBox(height: 8),

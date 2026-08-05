@@ -170,7 +170,7 @@ class VentResponseScreen extends StatelessWidget {
               color: AppColors.peachSoft.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(AppRadius.sm),
               child: InkWell(
-                onTap: () => context.push('/help'),
+                onTap: () => context.push('/specialist'),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
