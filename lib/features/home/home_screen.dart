@@ -133,10 +133,11 @@ class HomeMasthead extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Пять безымянных иконок переехали в нижний бар и в «Ещё».
-          // Осталась одна — знаки присутствия. Заодно исчез повод для
-          // Flexible: в строке два элемента вместо шести, и уронить её
-          // в overflow на узком экране больше нечем.
+          // Пять безымянных иконок переехали в нижний бар. Осталась
+          // одна — вход в «Путь», где слиты календарь, знаки, опросники
+          // и «что я заметила». Заодно исчез повод для Flexible: в
+          // строке два элемента вместо шести, и уронить её в overflow
+          // на узком экране больше нечем.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -146,9 +147,9 @@ class HomeMasthead extends StatelessWidget {
                 style: theme.textTheme.labelSmall,
               ),
               const _NavIcon(
-                icon: Icons.workspace_premium_outlined,
-                tooltip: 'Знаки присутствия',
-                route: '/badges',
+                icon: Icons.calendar_month_outlined,
+                tooltip: 'Твой путь',
+                route: '/path',
               ),
             ],
           ),

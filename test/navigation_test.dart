@@ -2,13 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volna/core/theme/app_theme.dart';
 import 'package:volna/core/widgets/app_bottom_bar.dart';
-import 'package:volna/features/more/more_screen.dart';
 
-/// Сторожит навигацию: выход в кризисные техники, узкие экраны и то,
-/// что разделы не уезжают обратно под шестерёнку.
+/// Сторожит навигацию: что главный вход не уехал, что узкие экраны
+/// не ломаются и что ни один раздел не остался без входа.
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   Widget wrap(Widget child, {double width = 390, bool dark = false}) {
     return MaterialApp(
       theme: dark ? AppTheme.dark() : AppTheme.light(),
@@ -17,15 +19,12 @@ void main() {
   }
 
   group('Нижний бар', () {
-    // 320 px — iPhone SE. «Выговориться» — самая длинная подпись,
-    // ради неё в баре стоит FittedBox.
+    // 320 px — iPhone SE. «Настройки» и «Практики» — самые длинные
+    // подписи, ради них в баре стоит FittedBox.
     for (final width in const [320.0, 360.0, 375.0, 430.0]) {
       testWidgets('помещается в ${width.toInt()} px', (tester) async {
         await tester.pumpWidget(
-          wrap(
-            AppBottomBar(currentIndex: 0, onSelect: (_) {}, onSos: () {}),
-            width: width,
-          ),
+          wrap(AppBottomBar(currentIndex: 0, onSelect: (_) {}), width: width),
         );
         await tester.pump();
 
@@ -40,142 +39,143 @@ void main() {
       });
     }
 
-    testWidgets('кнопка «Плохо» не меньше 56×56 даже на 320 px',
-        (tester) async {
-      await tester.pumpWidget(
-        wrap(
-          AppBottomBar(currentIndex: 0, onSelect: (_) {}, onSos: () {}),
-          width: 320,
-        ),
-      );
-      await tester.pump();
-
-      final size = tester.getSize(find.byType(SosCapsule));
-      expect(size.width, greaterThanOrEqualTo(56));
-      expect(size.height, greaterThanOrEqualTo(56));
+    test('вкладок ровно четыре и «Практики» третьи', () {
+      expect(AppBottomBar.tabs.length, 4);
+      expect(AppBottomBar.practicesIndex, 2);
+      expect(AppBottomBar.tabs[AppBottomBar.practicesIndex].label, 'Практики');
     });
 
-    testWidgets('кнопка «Плохо» отделена от вкладок и зовёт наружу',
-        (tester) async {
-      var sos = 0;
-      var selected = -1;
+    testWidgets('«Практики» — единственная заливка в баре', (tester) async {
       await tester.pumpWidget(
-        wrap(
-          AppBottomBar(
-            currentIndex: 0,
-            onSelect: (i) => selected = i,
-            onSos: () => sos++,
-          ),
-        ),
+        wrap(AppBottomBar(currentIndex: 0, onSelect: (_) {})),
       );
-      await tester.tap(find.byType(SosCapsule));
       await tester.pump();
 
-      expect(sos, 1);
-      expect(
-        selected,
-        -1,
-        reason: 'кризисный выход не должен переключать вкладку',
-      );
+      // Material с непрозрачным цветом внутри бара должен быть один:
+      // главный вход находится по цвету, а не чтением подписей.
+      // Считаем только внутри бара: Scaffold снаружи тоже Material.
+      final filled = tester
+          .widgetList<Material>(
+            find.descendant(
+              of: find.byType(AppBottomBar),
+              matching: find.byType(Material),
+            ),
+          )
+          .where((m) => m.color != null && m.color != Colors.transparent)
+          .length;
+      expect(filled, 1, reason: 'заливок в баре должно быть ровно одна');
     });
 
     testWidgets('на вкладках нет ни одной цифры', (tester) async {
       await tester.pumpWidget(
-        wrap(AppBottomBar(currentIndex: 2, onSelect: (_) {}, onSos: () {})),
+        wrap(AppBottomBar(currentIndex: 2, onSelect: (_) {})),
       );
       await tester.pump();
 
       final digits = RegExp(r'\d');
       for (final w in tester.widgetList<Text>(find.byType(Text))) {
-        final text = w.data ?? '';
         expect(
-          digits.hasMatch(text),
+          digits.hasMatch(w.data ?? ''),
           isFalse,
-          reason: 'счётчиков в баре быть не может: «$text»',
+          reason: 'счётчиков в баре быть не может: «${w.data}»',
         );
       }
     });
 
-    testWidgets('переключение вкладки отдаёт индекс', (tester) async {
+    testWidgets('каждая вкладка отдаёт свой индекс', (tester) async {
       var selected = -1;
       await tester.pumpWidget(
-        wrap(
-          AppBottomBar(
-            currentIndex: 0,
-            onSelect: (i) => selected = i,
-            onSos: () {},
-          ),
-        ),
+        wrap(AppBottomBar(currentIndex: 0, onSelect: (i) => selected = i)),
       );
-      await tester.tap(find.text('Дневник'));
-      await tester.pump();
 
-      expect(selected, 2);
+      for (var i = 0; i < AppBottomBar.tabs.length; i++) {
+        await tester.tap(find.text(AppBottomBar.tabs[i].label));
+        await tester.pump();
+        expect(selected, i);
+      }
     });
 
     testWidgets('живёт в тёмной теме', (tester) async {
       await tester.pumpWidget(
-        wrap(
-          AppBottomBar(currentIndex: 1, onSelect: (_) {}, onSos: () {}),
-          dark: true,
-        ),
+        wrap(AppBottomBar(currentIndex: 2, onSelect: (_) {}), dark: true),
       );
       await tester.pump();
-
       expect(tester.takeException(), isNull);
-      expect(find.byType(SosCapsule), findsOneWidget);
     });
   });
 
-  group('«Ещё» собирает всё, что не вкладка', () {
-    testWidgets('показывает разделы, вытащенные из настроек',
-        (tester) async {
-      // ListView ленивый: на короткой поверхности нижние группы просто
-      // не построятся, и проверка станет ложноотрицательной.
-      tester.view.physicalSize = const Size(1170, 6000);
-      tester.view.devicePixelRatio = 3;
-      addTearDown(tester.view.reset);
+  group('Ни один раздел не остался без входа', () {
+    String read(String p) => File(p).readAsStringSync();
 
-      await tester.pumpWidget(
-        MaterialApp(theme: AppTheme.light(), home: const MoreScreen()),
-      );
-      await tester.pump();
+    test('«Практики» держат библиотеку и специалиста', () {
+      final s = read('lib/features/practices/practices_screen.dart');
+      expect(s.contains("'/library'"), isTrue);
+      expect(s.contains("'/help'"), isTrue);
+    });
 
-      for (final title in const [
-        'Древо',
-        'Календарь',
-        'Что я заметила',
-        'Библиотека',
-        'Опросники',
-        'Специалист',
-        'Знаки присутствия',
-        'Настройки',
+    test('«Путь» держит опросники и «что я заметила»', () {
+      final s = read('lib/features/path/path_screen.dart');
+      expect(s.contains("'/insights'"), isTrue);
+      expect(s.contains("'/questionnaire'"), isTrue);
+    });
+
+    test('«Путь» вобрал календарь и знаки присутствия', () {
+      final s = read('lib/features/path/path_screen.dart');
+      expect(s.contains('badge_data.allBadges'), isTrue,
+          reason: 'знаки должны рисоваться прямо здесь, а не ссылкой');
+      expect(s.contains('_MonthGrid'), isTrue,
+          reason: 'календарь должен рисоваться прямо здесь');
+    });
+
+    test('на главной есть вход в «Путь» и никаких иконок-разделов', () {
+      final s = read('lib/features/home/home_screen.dart');
+      expect(s.contains("'/path'"), isTrue);
+      // Пять иконок уехали в бар: если какая-то вернётся сюда, шапка
+      // снова начнёт разъезжаться на узких экранах.
+      for (final gone in const [
+        "'/badges'",
+        "'/help'",
+        "'/library'",
+        "'/settings'",
+        "'/diary'",
       ]) {
-        expect(find.text(title), findsOneWidget, reason: 'нет пункта «$title»');
+        expect(
+          s.contains(gone),
+          isFalse,
+          reason: '$gone вернулся иконкой в шапку — ему место в баре',
+        );
       }
     });
 
-    test('каждый пункт ведёт на существующий маршрут', () {
-      final router = File('lib/app/router.dart').readAsStringSync();
-      for (final g in MoreScreen.groups) {
-        for (final e in g.entries) {
-          expect(
-            router.contains("'${e.route}'"),
-            isTrue,
-            reason: 'маршрут ${e.route} не объявлен в роутере',
-          );
-        }
+    test('дневник держит оба входа в «выговориться»', () {
+      final s = read('lib/features/diary/diary_list_screen.dart');
+      expect(s.contains("'/vent'"), isTrue);
+      expect(s.contains("'/vent/text'"), isTrue);
+    });
+
+    test('старые адреса ведут туда, где содержимое теперь живёт', () {
+      final r = read('lib/app/router.dart');
+      for (final pair in const [
+        ["'/sos'", "'/practices'"],
+        ["'/calendar'", "'/path'"],
+        ["'/badges'", "'/path'"],
+      ]) {
+        expect(
+          RegExp("path: ${pair[0]}, redirect: .*${pair[1]}").hasMatch(r),
+          isTrue,
+          reason: '${pair[0]} должен вести на ${pair[1]}',
+        );
       }
     });
   });
 
   group('Разделы не возвращаются под шестерёнку', () {
-    test('настройки больше не прячут календарь, инсайты и опросники', () {
-      final settings =
+    test('настройки не прячут календарь, инсайты и опросники', () {
+      final s =
           File('lib/features/settings/settings_screen.dart').readAsStringSync();
       for (final route in const ['/insights', '/questionnaire', '/calendar']) {
         expect(
-          settings.contains("push('$route')"),
+          s.contains("push('$route')"),
           isFalse,
           reason: '$route снова похоронен в настройках',
         );

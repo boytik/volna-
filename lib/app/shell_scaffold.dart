@@ -27,7 +27,6 @@ class ShellScaffold extends StatelessWidget {
           // привычное поведение, и заодно выход из тупика.
           initialLocation: i == navigationShell.currentIndex,
         ),
-        onSos: () => context.push('/sos'),
       ),
     );
   }

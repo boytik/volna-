@@ -35,7 +35,7 @@ void main() {
         reason: 'шапка не должна переполнять строку',
       );
       expect(find.text('УТРО'), findsOneWidget);
-      expect(find.byIcon(Icons.workspace_premium_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.calendar_month_outlined), findsOneWidget);
     });
   }
 

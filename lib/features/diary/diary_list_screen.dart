@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/leaves_device_mark.dart';
 import '../../data/local/diary_storage.dart';
 import '../../main.dart';
 
@@ -38,26 +39,44 @@ class _DiaryListScreenState extends State<DiaryListScreen>
     final entries = diaryStorage.all();
     final readyEnvelopes = diaryStorage.envelopesReadyToReopen;
 
+    // Корень вкладки: кнопки «назад» здесь нет, уходят другой вкладкой.
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: SafeArea(
-        top: false,
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            AppSpacing.xxl,
+            AppSpacing.axis,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Дневник', style: theme.textTheme.displayLarge),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.smd),
             Text(
               'Здесь живут твои мысли. Никто их не увидит. '
               'Можно писать одной строкой — это уже работает.',
-              style: theme.textTheme.bodyMedium,
+              style: theme.textTheme.bodyLarge,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
+
+            // «Выговориться» переехало сюда с отдельной вкладки:
+            // писать и говорить — два способа выложить одно и то же,
+            // и держать их в разных концах бара было странно.
+            Text('СКАЗАТЬ ВСЛУХ', style: theme.textTheme.labelSmall),
+            const SizedBox(height: AppSpacing.sm),
+            _VentRow(
+              title: 'Выговориться голосом',
+              note: 'Зажми и говори — я выслушаю и отвечу',
+              route: '/vent',
+              leavesDevice: true,
+            ),
+            _VentRow(
+              title: 'Написать текстом',
+              note: 'То же самое, только буквами',
+              route: '/vent/text',
+            ),
+            const SizedBox(height: AppSpacing.xxl),
             if (readyEnvelopes.isNotEmpty) ...[
               _ReopenBanner(
                 count: readyEnvelopes.length,
@@ -342,5 +361,61 @@ class _EntryCard extends StatelessWidget {
       'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
     ];
     return '${d.day} ${months[d.month - 1]}';
+  }
+}
+
+/// Вход в «выговориться» из дневника. Знак «уходит на сервер» стоит
+/// только на голосовом варианте: текстовый разбирается там же, но
+/// именно аудио покидает телефон первым, и это должно быть видно
+/// до нажатия, а не после.
+class _VentRow extends StatelessWidget {
+  const _VentRow({
+    required this.title,
+    required this.note,
+    required this.route,
+    this.leavesDevice = false,
+  });
+
+  final String title;
+  final String note;
+  final String route;
+  final bool leavesDevice;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: () => context.push(route),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outline,
+              width: AppStroke.hairline,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Flexible(
+                  child: Text(title, style: theme.textTheme.titleLarge),
+                ),
+                if (leavesDevice) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  const LeavesDeviceMark(),
+                ],
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(note, style: theme.textTheme.bodyMedium),
+          ],
+        ),
+      ),
+    );
   }
 }

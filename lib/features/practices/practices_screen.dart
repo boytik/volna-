@@ -5,49 +5,107 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
 import '../../data/content/sos_techniques.dart';
 
-/// Меню SOS — техники сгруппированы по триггерному состоянию.
-/// Это даёт пользователю быстрый путь: сначала выбираешь «что я сейчас чувствую»,
-/// потом видишь подходящие техники.
-class SosMenuScreen extends StatelessWidget {
-  const SosMenuScreen({super.key});
+/// «Практики» — центральная вкладка и главный вход, когда тяжело.
+///
+/// Техники сгруппированы по состоянию: сначала выбираешь «что я сейчас
+/// чувствую», потом видишь подходящее. Раньше это был экран `/sos`,
+/// куда вела одна кнопка с главной; теперь это вкладка, доступная
+/// откуда угодно.
+///
+/// Сюда же переехали библиотека фраз и связь со специалистом: всё
+/// это — что делать, когда тяжело, от техники до живого человека.
+/// Раньше они лежали в «Ещё», а до того — под шестерёнкой.
+class PracticesScreen extends StatelessWidget {
+  const PracticesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.go('/'),
-        ),
-      ),
       body: SafeArea(
-        top: false,
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            AppSpacing.xxl,
+            AppSpacing.axis,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Что сейчас?', style: theme.textTheme.displayLarge),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.smd),
             Text(
               'Выбери своё состояние — найдём технику. '
               'Это не лечение, это пауза.',
-              style: theme.textTheme.bodyMedium,
+              style: theme.textTheme.bodyLarge,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             ...SosTrigger.values.map(
               (t) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: _TriggerBlock(trigger: t),
               ),
             ),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                'Если очень плохо — позвони 8-800-2000-122',
-                style: theme.textTheme.bodySmall,
-              ),
+            const SizedBox(height: AppSpacing.xl),
+            Text('ЕЩЁ ЧТО МОЖЕТ ПОМОЧЬ', style: theme.textTheme.labelSmall),
+            const SizedBox(height: AppSpacing.sm),
+            _LinkRow(
+              title: 'Библиотека',
+              note: 'Фразы на трудные моменты и ресурсы',
+              route: '/library',
             ),
+            _LinkRow(
+              title: 'Специалист',
+              note: 'Подготовиться к сессии, найти помощь',
+              route: '/help',
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Если очень плохо — позвони 8-800-2000-122',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Строка оглавления: набранная, а не карточка с иконкой.
+class _LinkRow extends StatelessWidget {
+  const _LinkRow({
+    required this.title,
+    required this.note,
+    required this.route,
+  });
+
+  final String title;
+  final String note;
+  final String route;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return InkWell(
+      onTap: () => context.push(route),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outline,
+              width: AppStroke.hairline,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.xs),
+            Text(note, style: theme.textTheme.bodyMedium),
           ],
         ),
       ),

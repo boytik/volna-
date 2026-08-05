@@ -200,10 +200,11 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Кнопки закрытия здесь нет: это корень вкладки, а не экран,
-      // на который зашли. Уйти отсюда можно любой другой вкладкой.
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
+        ),
         title: Text(
           'Выговорись',
           style: Theme.of(context).textTheme.titleLarge,

@@ -98,18 +98,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Корень вкладки: кнопки «назад» здесь нет, уходят другой вкладкой.
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(''),
-      ),
       body: SafeArea(
-        top: false,
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            AppSpacing.xxl,
+            AppSpacing.axis,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Настройки', style: theme.textTheme.displayLarge),
             const SizedBox(height: 28),

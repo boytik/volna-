@@ -6,19 +6,18 @@ import '../data/content/quests.dart';
 import '../data/content/questionnaires.dart';
 import '../data/content/vent_keywords.dart';
 import '../data/local/diary_storage.dart';
-import '../features/badges/badges_screen.dart';
-import '../features/calendar/calendar_screen.dart';
 import '../features/diary/diary_list_screen.dart';
 import '../features/diary/diary_new_screen.dart';
 import '../features/diary/envelope_reopen_screen.dart';
 import '../features/help/help_screen.dart';
 import '../features/help/prepare_session_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/path/path_screen.dart';
+import '../features/practices/practices_screen.dart';
 import '../features/insights/insights_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/library/phrases_screen.dart';
 import '../features/library/resources_screen.dart';
-import '../features/more/more_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/quest/quest_screen.dart';
 import '../features/quest/survival_screen.dart';
@@ -29,7 +28,6 @@ import '../features/settings/settings_screen.dart';
 import '../features/sos/breathing_screen.dart';
 import '../features/sos/grounding_screen.dart';
 import '../features/sos/self_compassion_screen.dart';
-import '../features/sos/sos_menu_screen.dart';
 import '../features/sos/technique_screen.dart';
 import '../features/tree/tree_screen.dart';
 import '../features/vent/crisis_screen.dart';
@@ -71,28 +69,45 @@ final appRouter = GoRouter(
         StatefulShellBranch(
           routes: [GoRoute(path: '/', builder: (_, _) => const HomeScreen())],
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(path: '/vent', builder: (_, _) => const VoiceVentScreen()),
-          ],
-        ),
+        // Дневник и «выговориться» — одна вкладка: и то и другое
+        // способ выложить, что внутри, разница только в том, пишешь
+        // ты или говоришь.
         StatefulShellBranch(
           routes: [
             GoRoute(path: '/diary', builder: (_, _) => const DiaryListScreen()),
           ],
         ),
         StatefulShellBranch(
-          routes: [GoRoute(path: '/more', builder: (_, _) => const MoreScreen())],
+          routes: [
+            GoRoute(
+              path: '/practices',
+              builder: (_, _) => const PracticesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/settings',
+              builder: (_, _) => const SettingsScreen(),
+            ),
+          ],
         ),
       ],
     ),
 
-    GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
     GoRoute(path: '/privacy', builder: (_, _) => const PrivacyScreen()),
-    GoRoute(path: '/badges', builder: (_, _) => const BadgesScreen()),
 
-    // SOS
-    GoRoute(path: '/sos', builder: (_, _) => const SosMenuScreen()),
+    // «Путь» — календарь, знаки, опросники и инсайты одним экраном.
+    // Вход один: правый верхний угол главной.
+    GoRoute(path: '/path', builder: (_, _) => const PathScreen()),
+
+    // Старые адреса ведут туда, где их содержимое теперь живёт:
+    // ссылки на них раскиданы по экранам и внешним подсказкам.
+    GoRoute(path: '/sos', redirect: (_, _) => '/practices'),
+    GoRoute(path: '/calendar', redirect: (_, _) => '/path'),
+    GoRoute(path: '/badges', redirect: (_, _) => '/path'),
+
     GoRoute(path: '/sos/breathing', builder: (_, _) => const BreathingScreen()),
     GoRoute(path: '/sos/grounding', builder: (_, _) => const GroundingScreen()),
     GoRoute(path: '/sos/self-compassion', builder: (_, _) => const SelfCompassionScreen()),
@@ -115,8 +130,10 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Vent — корень («голос») живёт во вкладке выше; текст и ответ
-    // пушатся поверх оболочки: это сфокусированные состояния.
+    // Vent — вход из вкладки «Дневник»: и запись, и голос это способы
+    // выложить, что внутри. Пушится поверх оболочки, потому что запись
+    // и расшифровка — сфокусированное состояние.
+    GoRoute(path: '/vent', builder: (_, _) => const VoiceVentScreen()),
     GoRoute(path: '/vent/text', builder: (_, _) => const VentScreen()),
     GoRoute(
       path: '/vent/response',
@@ -152,7 +169,6 @@ final appRouter = GoRouter(
 
     // Tree, calendar, library
     GoRoute(path: '/tree', builder: (_, _) => const TreeScreen()),
-    GoRoute(path: '/calendar', builder: (_, _) => const CalendarScreen()),
     GoRoute(path: '/insights', builder: (_, _) => const InsightsScreen()),
     GoRoute(path: '/library', builder: (_, _) => const LibraryScreen()),
     GoRoute(

@@ -3,33 +3,34 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/tokens.dart';
 
-/// Нижний бар: четыре вкладки и отдельная коралловая кнопка «Плохо».
+/// Нижний бар: четыре равных места, третье — «Практики».
 ///
-/// Структура взята у iOS 26, где рядом с таб-баром стоит отдельная
-/// кнопка поиска. Материал остался свой: плоская бумага и волосяная
-/// линейка сверху. Никакого стекла, блюра, теней и градиентов —
-/// они противоречат «Печатной странице» (см. DESIGN.md).
+/// «Практики» это вкладка, а не отдельная кнопка сбоку: главный вход
+/// для тяжёлого момента должен стоять в ряду, а не выглядеть аварийным
+/// рычагом. Выделен цветом и заливкой, а не положением — глаз находит
+/// его по кораллу быстрее, чем считает миллиметры от края.
 ///
-/// Кнопка «Плохо» вынесена из ряда вкладок намеренно. Она не раздел,
-/// а выход: её нельзя перепутать с навигацией, и она видна на всех
-/// четырёх корнях вкладок, а не на одной главной, как раньше.
+/// Материал плоский: бумага и волосяная линейка сверху. Ни стекла,
+/// ни блюра, ни теней (см. DESIGN.md).
 class AppBottomBar extends StatelessWidget {
   const AppBottomBar({
     super.key,
     required this.currentIndex,
     required this.onSelect,
-    required this.onSos,
   });
 
   final int currentIndex;
   final ValueChanged<int> onSelect;
-  final VoidCallback onSos;
+
+  /// Индекс «Практик». Вынесен константой: на него завязана и заливка,
+  /// и тесты, которые следят, что главный вход не уехал.
+  static const practicesIndex = 2;
 
   static const tabs = <({String label, IconData icon})>[
     (label: 'Главная', icon: Icons.home_outlined),
-    (label: 'Выговориться', icon: Icons.mic_none_rounded),
     (label: 'Дневник', icon: Icons.edit_note_outlined),
-    (label: 'Ещё', icon: Icons.more_horiz_rounded),
+    (label: 'Практики', icon: Icons.spa_outlined),
+    (label: 'Настройки', icon: Icons.tune_outlined),
   ];
 
   @override
@@ -51,30 +52,30 @@ class AppBottomBar extends StatelessWidget {
             color: theme.colorScheme.outline,
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              0,
-              AppSpacing.smd,
-              0,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs,
             ),
-            // 64, а не 58: капсула высотой 56 иначе прилипает к
-            // волосяной линейке сверху (замер на симуляторе дал 1.7pt
-            // зазора). Отдельная кнопка должна читаться отдельной.
             child: SizedBox(
-              height: 64,
+              height: 62,
               child: Row(
                 children: [
                   for (var i = 0; i < tabs.length; i++)
                     Expanded(
-                      child: _Tab(
-                        label: tabs[i].label,
-                        icon: tabs[i].icon,
-                        selected: i == currentIndex,
-                        onTap: () => onSelect(i),
-                      ),
+                      child: i == practicesIndex
+                          ? _PracticesTab(
+                              label: tabs[i].label,
+                              icon: tabs[i].icon,
+                              selected: i == currentIndex,
+                              onTap: () => onSelect(i),
+                            )
+                          : _Tab(
+                              label: tabs[i].label,
+                              icon: tabs[i].icon,
+                              selected: i == currentIndex,
+                              onTap: () => onSelect(i),
+                            ),
                     ),
-                  const SizedBox(width: AppSpacing.sm),
-                  SosCapsule(onTap: onSos),
                 ],
               ),
             ),
@@ -126,9 +127,6 @@ class _Tab extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Icon(icon, size: 21, color: color),
             const SizedBox(height: 3),
-            // «Выговориться» не влезает в ширину вкладки на 320pt.
-            // scaleDown ужимает подпись только там, где иначе был бы
-            // обрез; на 375pt и шире она в полном кегле.
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
@@ -149,60 +147,68 @@ class _Tab extends StatelessWidget {
   }
 }
 
-/// Кнопка выхода в кризисные техники. Одно слово: в остром состоянии
-/// читать не хочется, а «Плохо» опознаётся мгновенно и по цвету, и по
-/// положению — она единственная цветная в баре.
-class SosCapsule extends StatelessWidget {
-  const SosCapsule({super.key, required this.onTap});
+/// «Практики» — единственная заливка в баре. Это главный вход, когда
+/// тяжело, и он не должен искаться чтением подписей.
+class _PracticesTab extends StatelessWidget {
+  const _PracticesTab({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
 
+  final String label;
+  final IconData icon;
+  final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Semantics(
+      selected: selected,
       button: true,
-      label: 'Мне сейчас плохо',
-      child: Tooltip(
-        message: 'Мне сейчас плохо',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
         child: Material(
           color: AppColors.sos,
           borderRadius: AppRadius.smR,
           child: InkWell(
             onTap: onTap,
             borderRadius: AppRadius.smR,
-            child: const SizedBox(
-              width: 64,
-              height: 56,
-              child: Center(child: _SosLabel()),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Та же закладка, что у обычных вкладок, только
+                // чернилами по кораллу.
+                Container(
+                  height: 2,
+                  width: 18,
+                  color: selected ? AppColors.sosInk : Colors.transparent,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                const Icon(Icons.spa_outlined,
+                    size: 21, color: AppColors.sosInk),
+                const SizedBox(height: 3),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      height: 1.1,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.sosInk,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SosLabel extends StatelessWidget {
-  const _SosLabel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.pan_tool_alt_outlined,
-            size: 20, color: AppColors.sosInk),
-        const SizedBox(height: 2),
-        Text(
-          'Плохо',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 11,
-                height: 1.1,
-                fontWeight: FontWeight.w700,
-                color: AppColors.sosInk,
-              ),
-        ),
-      ],
     );
   }
 }
