@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/anchor_options.dart';
 import '../../main.dart';
 
@@ -172,7 +173,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           color: i == _page
                               ? AppColors.terracotta
                               : AppColors.textMuted.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                       ),
                     ),
@@ -225,23 +226,11 @@ class _StoryPage extends StatelessWidget {
           Container(
             width: 120,
             height: 120,
+            // Была декоративная клякса с градиентом и ореолом. Осталась
+            // печать: контурный круг волосяной линией.
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  accent.withValues(alpha: 0.6),
-                  accent,
-                ],
-              ),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                ),
-              ],
+              border: Border.all(color: accent, width: AppStroke.hairline),
             ),
           ),
           const SizedBox(height: 40),
@@ -328,8 +317,8 @@ class _DataRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: accent.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -449,15 +438,15 @@ class _AnchorTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: selected ? accent.withValues(alpha: 0.18) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: selected ? accent.withValues(alpha: 0.18) : AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               border: Border.all(
                 color: selected ? accent : Colors.transparent,
                 width: 1.5,

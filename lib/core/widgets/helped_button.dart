@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/local/toolbox_storage.dart';
 import '../../main.dart';
 import '../theme/colors.dart';
+import '../theme/tokens.dart';
 
 /// Кнопка «помогло» в конце SOS-техник. Тап → +1 в toolbox, лёгкая анимация.
 class HelpedButton extends StatefulWidget {
@@ -29,25 +30,27 @@ class _HelpedButtonState extends State<HelpedButton> {
 
     if (_saved) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.smd,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
-          color: AppColors.sage.withValues(alpha: 0.25),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.smR,
+          border: Border.all(
+            color: AppColors.marked,
+            width: AppStroke.hairline,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.sageDeep,
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'Запомнила. Что помогло — теперь твоё.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.sageDeep,
-                fontWeight: FontWeight.w600,
+            const Icon(Icons.check_rounded, color: AppColors.marked, size: 16),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Text(
+                'Запомнила. Что помогло — теперь твоё.',
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: AppColors.marked),
               ),
             ),
           ],
@@ -55,14 +58,9 @@ class _HelpedButtonState extends State<HelpedButton> {
       );
     }
 
-    return TextButton.icon(
+    return OutlinedButton(
       onPressed: _save,
-      icon: const Icon(Icons.favorite_border_rounded, size: 18),
-      label: const Text('Помогло — запомнить'),
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.terracotta,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      ),
+      child: const Text('Помогло — запомнить'),
     );
   }
 }

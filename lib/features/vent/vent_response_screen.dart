@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/phrases.dart';
 import '../../data/content/vent_keywords.dart';
 
@@ -56,7 +57,7 @@ class VentResponseScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: _accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
                 border: Border.all(color: _accent.withValues(alpha: 0.4)),
               ),
               child: Column(
@@ -85,11 +86,11 @@ class VentResponseScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              color: AppColors.paperLift,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               child: InkWell(
                 onTap: () => context.push(s.techniqueRoute),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -141,8 +142,8 @@ class VentResponseScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
+                color: AppColors.paperLift,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,10 +168,10 @@ class VentResponseScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Material(
               color: AppColors.peachSoft.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               child: InkWell(
                 onTap: () => context.push('/help'),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
                   child: Row(

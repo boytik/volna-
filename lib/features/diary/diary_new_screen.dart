@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/local/diary_storage.dart';
 import '../../main.dart';
 import '../vent/crisis_guard.dart';
@@ -212,7 +213,7 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppColors.peachSoft.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Text(
                 'Теперь представь — твоя лучшая подруга '
@@ -283,17 +284,17 @@ class _Field extends StatelessWidget {
               color: AppColors.textMuted,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.paperLift,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               borderSide: BorderSide(color: accent, width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               borderSide: BorderSide.none,
             ),
             contentPadding: const EdgeInsets.all(14),

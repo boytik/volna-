@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/launch.dart';
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/resources.dart';
 
 class ResourcesScreen extends StatelessWidget {
@@ -89,11 +90,11 @@ class _ResourceCard extends StatelessWidget {
     final isPhone = resource.url.startsWith('tel:');
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: () => _open(context),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(

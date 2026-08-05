@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/sos_techniques.dart';
 
 /// Меню SOS — техники сгруппированы по триггерному состоянию.
@@ -81,8 +82,8 @@ class _TriggerBlock extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +95,7 @@ class _TriggerBlock extends StatelessWidget {
                 height: 32,
                 decoration: BoxDecoration(
                   color: _accent,
-                  borderRadius: BorderRadius.circular(3),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
               ),
               const SizedBox(width: 12),
@@ -132,13 +133,13 @@ class _TechniqueRow extends StatelessWidget {
 
     return Material(
       color: AppColors.cream,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: () {
           final route = technique.routeOverride ?? '/sos/technique/${technique.id}';
           context.push(route);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(

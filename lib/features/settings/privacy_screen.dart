@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 
 /// Что происходит с данными — человеческим языком.
 ///
@@ -83,7 +84,7 @@ class PrivacyScreen extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppColors.cream,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
                 border: Border.all(
                   color: AppColors.textMuted.withValues(alpha: 0.2),
                 ),
@@ -127,8 +128,8 @@ class _Block extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: accent.withValues(alpha: 0.3)),
       ),
       child: Column(

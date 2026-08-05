@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/quests.dart';
 import '../../data/local/checkin_storage.dart';
 import '../../main.dart';
@@ -234,15 +235,15 @@ class _Tile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? accent.withValues(alpha: 0.18) : Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: selected ? accent.withValues(alpha: 0.18) : AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(
               color: selected ? accent : Colors.transparent,
               width: 1.5,

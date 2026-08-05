@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/launch.dart';
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/questionnaires.dart';
 import '../../data/content/specialists.dart';
 import '../../data/local/questionnaire_storage.dart';
@@ -113,7 +114,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
                 child: LinearProgressIndicator(
                   value: progress,
                   minHeight: 5,
@@ -241,18 +242,18 @@ class _ScaleRow extends StatelessWidget {
           child: Material(
             color: isSel
                 ? AppColors.terracotta.withValues(alpha: 0.18)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(14),
+                : AppColors.paperLift,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             child: InkWell(
               onTap: () => onTap(opt.$1),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: dense ? 10 : 14,
                 ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
                     color: isSel ? AppColors.terracotta : Colors.transparent,
                     width: 1.5,
@@ -298,15 +299,15 @@ class _BigOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? accent.withValues(alpha: 0.22) : Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: selected ? accent.withValues(alpha: 0.22) : AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 22),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(
               color: selected ? accent : Colors.transparent,
               width: 2,
@@ -401,7 +402,7 @@ class _ResultScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: zone.color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
                     color: zone.color.withValues(alpha: 0.5),
                   ),
@@ -440,7 +441,7 @@ class _ResultScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.cream,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
                     color: AppColors.textMuted.withValues(alpha: 0.2),
                   ),
@@ -567,8 +568,8 @@ class _ComparisonCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Row(
@@ -622,11 +623,11 @@ class _ActionButton extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(

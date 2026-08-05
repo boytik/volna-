@@ -29,6 +29,9 @@ Future<void> main() async {
 
   try {
     questStorage = await QuestStorage.create();
+    // Кольца у основания древа считаются от первого запуска, поэтому
+    // дату нужно поставить до первой отрисовки.
+    await questStorage.ensureFirstSeen();
     settingsStorage = await SettingsStorage.create();
     checkInStorage = await CheckInStorage.create();
     diaryStorage = await DiaryStorage.create();
@@ -73,6 +76,10 @@ class VolnaApp extends StatelessWidget {
       title: 'Волна',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      // Ночная бумага следует системной теме. По часам устройства
+      // было бы неожиданно: приложение темнеет, когда система светлая.
+      themeMode: ThemeMode.system,
       routerConfig: appRouter,
     );
   }

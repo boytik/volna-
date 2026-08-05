@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/quests.dart';
 import '../../main.dart';
 
@@ -63,8 +64,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             const SizedBox(height: 8),
             Text(
               'Цвет — твоё настроение из чек-инов. '
-              'Капелька — был утренний или вечерний шаг.',
-              style: theme.textTheme.bodyMedium,
+              'Точка — был утренний или вечерний шаг. '
+              'Дни без отметок остаются пустой бумагой.',
+              style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             _MonthHeader(
@@ -212,12 +214,16 @@ class _DayCell extends StatelessWidget {
   final bool isToday;
   final bool isFuture;
 
-  Color _moodColor(double? avg) {
-    if (avg == null) return AppColors.textMuted.withValues(alpha: 0.18);
-    // 0=плохо, 1=средне, 2=хорошо. Цвет: коралл → персик → шалфей.
-    if (avg < 0.7) return AppColors.coral;
-    if (avg < 1.4) return AppColors.peach;
-    return AppColors.sage;
+  /// Заливка только там, где чек-ин был. Дня без отметки не существует
+  /// как объекта: ни заливки, ни рамки, ни серого квадрата — просто
+  /// бумага. Свои пропуски невозможно увидеть, потому что они не
+  /// отрисованы.
+  Color? _moodColor(double? avg) {
+    if (avg == null) return null;
+    // 0=плохо, 1=средне, 2=хорошо.
+    if (avg < 0.7) return AppColors.sos;
+    if (avg < 1.4) return AppColors.dawn;
+    return AppColors.markedWash;
   }
 
   @override
@@ -225,18 +231,19 @@ class _DayCell extends StatelessWidget {
     final theme = Theme.of(context);
     final avg = isFuture ? null : checkInStorage.averageMood(date);
     final color = _moodColor(avg);
-    final didMorning =
-        questStorage.isDoneOn(QuestSlot.morning, date);
-    final didEvening =
-        questStorage.isDoneOn(QuestSlot.evening, date);
-    final hasDrops = didMorning || didEvening;
+    final didMorning = questStorage.isDoneOn(QuestSlot.morning, date);
+    final didEvening = questStorage.isDoneOn(QuestSlot.evening, date);
+    final hasStep = didMorning || didEvening;
 
     return Container(
       decoration: BoxDecoration(
-        color: isFuture ? Colors.transparent : color,
-        borderRadius: BorderRadius.circular(10),
+        color: color,
+        borderRadius: AppRadius.smR,
         border: isToday
-            ? Border.all(color: AppColors.terracotta, width: 1.5)
+            ? Border.all(
+                color: AppColors.accent,
+                width: AppStroke.hairline,
+              )
             : null,
       ),
       child: Stack(
@@ -245,23 +252,39 @@ class _DayCell extends StatelessWidget {
           Center(
             child: Text(
               '$day',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isFuture ? AppColors.textMuted : AppColors.textPrimary,
-                fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isFuture
+                    ? theme.colorScheme.outline
+                    : (color != null
+                        ? AppColors.inkBody
+                        : theme.textTheme.bodySmall?.color),
+                fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
           ),
-          if (hasDrops)
+          if (hasStep)
             const Positioned(
               right: 4,
               top: 4,
-              child: Icon(
-                Icons.eco_rounded,
-                color: AppColors.sageDeep,
-                size: 9,
-              ),
+              child: _StepDot(),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  const _StepDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 5,
+      height: 5,
+      decoration: const BoxDecoration(
+        color: AppColors.marked,
+        shape: BoxShape.circle,
       ),
     );
   }
@@ -272,26 +295,27 @@ class _Legend extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: AppRadius.smR,
+        border: Border.all(
+          color: theme.colorScheme.outline,
+          width: AppStroke.hairline,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Что значат цвета', style: theme.textTheme.titleLarge),
-          const SizedBox(height: 12),
-          _LegendRow(color: AppColors.sage, text: 'Хорошее самочувствие'),
-          const SizedBox(height: 6),
-          _LegendRow(color: AppColors.peach, text: 'Среднее самочувствие'),
-          const SizedBox(height: 6),
-          _LegendRow(color: AppColors.coral, text: 'Тяжело'),
-          const SizedBox(height: 6),
-          _LegendRow(
-            color: AppColors.textMuted.withValues(alpha: 0.18),
-            text: 'Без чек-ина',
-          ),
+          const SizedBox(height: AppSpacing.smd),
+          _LegendRow(color: AppColors.markedWash, text: 'Хорошее самочувствие'),
+          const SizedBox(height: AppSpacing.sm),
+          _LegendRow(color: AppColors.dawn, text: 'Среднее самочувствие'),
+          const SizedBox(height: AppSpacing.sm),
+          _LegendRow(color: AppColors.sos, text: 'Тяжело'),
+          // Строки «Без чек-ина» здесь нет намеренно: день без отметки
+          // не рисуется, поэтому и объяснять в легенде нечего.
         ],
       ),
     );
@@ -312,10 +336,10 @@ class _LegendRow extends StatelessWidget {
           height: 16,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppRadius.smR,
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: AppSpacing.smd),
         Text(text, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );

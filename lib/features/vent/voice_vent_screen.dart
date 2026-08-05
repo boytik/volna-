@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/secrets.dart';
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/sos_techniques.dart';
 import '../../data/content/specialists.dart';
 import '../../data/content/vent_keywords.dart';
@@ -375,8 +376,8 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              color: AppColors.paperLift,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: TextField(
               controller: _transcriptCtl,
@@ -498,24 +499,13 @@ class _MicButton extends StatelessWidget {
       child: Container(
         width: 140,
         height: 140,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.coral, AppColors.terracotta],
-          ),
+        decoration: const BoxDecoration(
+          color: AppColors.accent,
           shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.coral.withValues(alpha: 0.4),
-              blurRadius: 30,
-              spreadRadius: 4,
-            ),
-          ],
         ),
         child: const Icon(
           Icons.mic_rounded,
-          color: Colors.white,
+          color: AppColors.paperLift,
           size: 56,
         ),
       ),
@@ -553,7 +543,7 @@ class _AmplitudeBars extends StatelessWidget {
                 height: h.clamp(20, 110),
                 decoration: BoxDecoration(
                   color: AppColors.terracotta,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
               ),
             );
@@ -592,7 +582,7 @@ class _ResponseView extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: AppColors.peachSoft.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(
               color: AppColors.terracotta.withValues(alpha: 0.3),
             ),
@@ -633,10 +623,10 @@ class _ResponseView extends StatelessWidget {
         const SizedBox(height: 24),
         Material(
           color: AppColors.sage.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           child: InkWell(
             onTap: () => context.push('/help'),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(
@@ -702,15 +692,15 @@ class _TechniqueLink extends StatelessWidget {
     if (tech == null) return const SizedBox.shrink();
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: () {
           context.push(
             tech.routeOverride ?? '/sos/technique/${tech.id}',
           );
         },
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -759,8 +749,8 @@ class _PhraseCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -797,7 +787,7 @@ class _QuestionCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.peachSoft.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

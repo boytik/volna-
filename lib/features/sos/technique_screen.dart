@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../core/widgets/helped_button.dart';
 import '../../data/content/sos_techniques.dart';
 import '../../data/local/toolbox_storage.dart';
@@ -80,7 +81,7 @@ class _TechniqueScreenState extends State<TechniqueScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           child: LinearProgressIndicator(
             value: (_step + 1) / tech.steps.length,
             minHeight: 5,
@@ -224,7 +225,7 @@ class _ContraindicationScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.coral.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
                     color: AppColors.coral.withValues(alpha: 0.5),
                   ),
