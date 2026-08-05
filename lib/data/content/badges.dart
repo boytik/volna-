@@ -75,14 +75,18 @@ const allBadges = <Badge>[
     color: AppColors.coral,
     unlock: _firstEnvelope,
   ),
+  // Здесь был знак «Три дня подряд» — награда за стрик. Его невозможно
+  // получить, не выдержав режим, а значит нельзя и не потерять. DESIGN.md
+  // запрещает награждать за регулярность: знаки даются за акты бережности
+  // к себе. Этот знак — обратный: его невозможно получить, НЕ пропустив.
   Badge(
-    id: 'three_in_a_row',
-    title: 'Три дня подряд',
-    description: 'Три дня — каждый со своим маленьким шагом. '
-        'Это уже привычка, не подвиг.',
-    icon: Icons.trending_up_rounded,
-    color: AppColors.saffron,
-    unlock: _threeInRow,
+    id: 'came_back',
+    title: 'Пропустила и вернулась',
+    description: 'Ты не приходила несколько дней, а потом пришла. '
+        'Вернуться труднее, чем не уходить. Это и есть устойчивость.',
+    icon: Icons.turn_left_rounded,
+    color: AppColors.accent,
+    unlock: _cameBack,
   ),
   Badge(
     id: 'week_with_me',
@@ -166,15 +170,25 @@ bool _firstSos(BadgeContext c) => c.toolBoxStorage.hasAny;
 bool _firstEnvelope(BadgeContext c) =>
     c.diaryStorage.ofKind(DiaryKind.envelope).isNotEmpty;
 
-bool _threeInRow(BadgeContext c) {
+/// Был перерыв не меньше двух дней подряд — и после него человек вернулся.
+/// Смотрим 30 дней назад: ищем два дня с отметками, между которыми лежит
+/// пробел хотя бы в два пустых дня.
+bool _cameBack(BadgeContext c) {
   final today = DateTime.now();
-  for (var i = 0; i < 3; i++) {
-    final d = today.subtract(Duration(days: i));
-    final any = c.questStorage.isDoneOn(QuestSlot.morning, d) ||
-        c.questStorage.isDoneOn(QuestSlot.evening, d);
-    if (!any) return false;
+  final active = <int>[];
+  for (var age = 0; age < 30; age++) {
+    final d = today.subtract(Duration(days: age));
+    if (c.questStorage.isDoneOn(QuestSlot.morning, d) ||
+        c.questStorage.isDoneOn(QuestSlot.evening, d)) {
+      active.add(age);
+    }
   }
-  return true;
+  // active отсортирован от свежих к старым: пробел между соседями
+  // в три и более дня означает два пустых дня между ними.
+  for (var i = 0; i + 1 < active.length; i++) {
+    if (active[i + 1] - active[i] >= 3) return true;
+  }
+  return false;
 }
 
 bool _weekWithMe(BadgeContext c) {

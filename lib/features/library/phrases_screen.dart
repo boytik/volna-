@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/phrases.dart';
 
 class PhrasesScreen extends StatelessWidget {
@@ -62,8 +63,8 @@ class _PhraseCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: () async {
           await Clipboard.setData(ClipboardData(text: text));
@@ -76,7 +77,7 @@ class _PhraseCard extends StatelessWidget {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Row(

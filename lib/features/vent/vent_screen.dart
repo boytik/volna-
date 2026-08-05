@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/vent_keywords.dart';
 import 'crisis_guard.dart';
 
@@ -80,8 +81,8 @@ class _VentScreenState extends State<VentScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      color: AppColors.paperLift,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: TextField(
                       controller: _controller,

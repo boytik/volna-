@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/questionnaires.dart';
 
 class QuestionnaireListScreen extends StatelessWidget {
@@ -39,7 +40,7 @@ class QuestionnaireListScreen extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppColors.peachSoft.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,11 +82,11 @@ class QuestionnaireListScreen extends StatelessWidget {
 
     return [
       Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.paperLift,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: InkWell(
           onTap: () => context.push('/questionnaire/${kind.name}'),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -95,7 +96,7 @@ class QuestionnaireListScreen extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     color: accent,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                 ),
                 const SizedBox(width: 14),

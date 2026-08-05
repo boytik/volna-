@@ -37,6 +37,53 @@ class QuestStorage {
 
   int get drops => _prefs.getInt('drops') ?? 0;
 
+  /// Дата первого запуска. Записывается один раз и больше не меняется —
+  /// от неё считаются кольца у основания древа.
+  Future<void> ensureFirstSeen() async {
+    if (_prefs.getString('first_seen') != null) return;
+    await _prefs.setString('first_seen', _dateKey(DateTime.now()));
+  }
+
+  DateTime? get firstSeen {
+    final s = _prefs.getString('first_seen');
+    if (s == null) return null;
+    final parts = s.split('-');
+    if (parts.length != 3) return null;
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+    );
+  }
+
+  /// Сколько полных недель человек с приложением. Растёт от того, что
+  /// время идёт, а не от того, справился ли он — поэтому не может упасть.
+  int get weeksLived {
+    final first = firstSeen;
+    if (first == null) return 0;
+    final today = DateTime.now();
+    final days = DateTime(today.year, today.month, today.day)
+        .difference(DateTime(first.year, first.month, first.day))
+        .inDays;
+    if (days < 0) return 0;
+    return days ~/ 7;
+  }
+
+  /// Дни за последние [days] суток, в которые был хотя бы один шаг.
+  /// Для «следов» в кроне древа: 0 — сегодня, [days]-1 — самый старый.
+  List<int> recentActivityAges({int days = 10}) {
+    final today = DateTime.now();
+    final ages = <int>[];
+    for (var age = 0; age < days; age++) {
+      final date = today.subtract(Duration(days: age));
+      if (isDoneOn(QuestSlot.morning, date) ||
+          isDoneOn(QuestSlot.evening, date)) {
+        ages.add(age);
+      }
+    }
+    return ages;
+  }
+
   /// Дата последней активности (любой завершённый квест).
   DateTime? get lastActivity {
     final s = _prefs.getString('last_activity');

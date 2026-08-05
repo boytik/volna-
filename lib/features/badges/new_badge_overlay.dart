@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/badges.dart' as badge_data;
 
-/// Модалка-приветствие при открытии нового значка.
-/// Показываем по одному (для нескольких — стек последовательно).
+/// Тихое сообщение об открытии нового знака.
+///
+/// Приложение никогда не празднует. Раньше здесь были радиальный
+/// градиент, свечение, вибрация и всё по центру — это торжество,
+/// а торжество подразумевает, что человек справился, то есть что
+/// в другой день он не справился. Осталась вклейка с ровным текстом.
 class NewBadgeOverlay {
   static Future<void> showAll(
     BuildContext context,
@@ -12,10 +17,9 @@ class NewBadgeOverlay {
   ) async {
     for (final b in badges) {
       if (!context.mounted) return;
-      HapticFeedback.lightImpact();
       await showDialog<void>(
         context: context,
-        barrierColor: Colors.black54,
+        barrierColor: AppColors.ink.withValues(alpha: 0.32),
         builder: (_) => _BadgeDialog(badge: b),
       );
     }
@@ -31,61 +35,39 @@ class _BadgeDialog extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: AppRadius.smR,
+        side: BorderSide(
+          color: theme.colorScheme.outline,
+          width: AppStroke.hairline,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'НОВЫЙ ЗНАК',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: badge.color,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.4,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    badge.color.withValues(alpha: 0.32),
-                    badge.color.withValues(alpha: 0.12),
-                  ],
+            Row(
+              children: [
+                Icon(badge.icon, color: AppColors.accent, size: 20),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  'НОВЫЙ ЗНАК',
+                  style: theme.textTheme.labelSmall
+                      ?.copyWith(color: AppColors.accentPress),
                 ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: badge.color.withValues(alpha: 0.3),
-                    blurRadius: 24,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Icon(badge.icon, color: badge.color, size: 48),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              badge.title,
-              style: theme.textTheme.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              badge.description,
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
+            const SizedBox(height: AppSpacing.md),
+            Text(badge.title, style: theme.textTheme.headlineMedium),
+            const SizedBox(height: AppSpacing.smd),
+            Text(badge.description, style: theme.textTheme.bodyLarge),
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton(
               onPressed: () => Navigator.of(context).pop(),
-              style: FilledButton.styleFrom(backgroundColor: badge.color),
               child: const Text('Хорошо'),
             ),
           ],

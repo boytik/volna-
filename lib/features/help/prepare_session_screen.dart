@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 
 /// Подготовка к встрече с психологом — короткая форма из 3 вопросов
 /// (в духе Stoic-app «prepare for therapy»).
@@ -181,17 +182,17 @@ class _Field extends StatelessWidget {
               color: AppColors.textMuted,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.paperLift,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               borderSide: BorderSide(color: accent, width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
               borderSide: BorderSide.none,
             ),
             contentPadding: const EdgeInsets.all(14),

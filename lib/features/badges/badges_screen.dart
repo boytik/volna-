@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/badges.dart' as badge_data;
 import '../../main.dart';
 
+/// Знаки присутствия.
+///
+/// Здесь намеренно нет: счётчика «открыто N из M», силуэтов под замком,
+/// вопросительных знаков и сетки. Незаработанного знака в интерфейсе
+/// просто не существует — нельзя увидеть, чего ты не добрала.
+/// Полученные лежат неровной полкой, как сухие листья и галька на
+/// подоконнике, а не выровненной таблицей достижений.
 class BadgesScreen extends StatelessWidget {
   const BadgesScreen({super.key});
 
@@ -12,9 +20,9 @@ class BadgesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final unlocked = badgesStorage.all();
-    final unlockedCount = badge_data.allBadges
+    final earned = badge_data.allBadges
         .where((b) => unlocked.contains(b.id))
-        .length;
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -26,32 +34,32 @@ class BadgesScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            0,
+            AppSpacing.marginRight,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Знаки присутствия', style: theme.textTheme.displayLarge),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.smd),
             Text(
-              'Это не ачивки. Это места, где ты была. '
-              'Открыто $unlockedCount из ${badge_data.allBadges.length}.',
-              style: theme.textTheme.bodyMedium,
+              earned.isEmpty
+                  ? 'Это не ачивки. Это места, где ты была. '
+                      'Они появятся сами — считать нечего и догонять некого.'
+                  : 'Это не ачивки. Это места, где ты была.',
+              style: theme.textTheme.bodyLarge,
             ),
-            const SizedBox(height: 24),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.85,
+            const SizedBox(height: AppSpacing.xl),
+            if (earned.isNotEmpty)
+              Wrap(
+                spacing: AppSpacing.smd,
+                runSpacing: AppSpacing.smd,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                children: [
+                  for (final b in earned) _BadgeMark(badge: b),
+                ],
               ),
-              itemCount: badge_data.allBadges.length,
-              itemBuilder: (_, i) {
-                final b = badge_data.allBadges[i];
-                final isUnlocked = unlocked.contains(b.id);
-                return _BadgeCard(badge: b, unlocked: isUnlocked);
-              },
-            ),
           ],
         ),
       ),
@@ -59,54 +67,37 @@ class BadgesScreen extends StatelessWidget {
   }
 }
 
-class _BadgeCard extends StatelessWidget {
-  const _BadgeCard({required this.badge, required this.unlocked});
+/// Знак — набранная плашка на полке, не карточка в сетке.
+class _BadgeMark extends StatelessWidget {
+  const _BadgeMark({required this.badge});
   final badge_data.Badge badge;
-  final bool unlocked;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = unlocked ? badge.color : AppColors.textMuted;
 
-    return GestureDetector(
+    return InkWell(
       onTap: () => _showDetails(context),
+      borderRadius: AppRadius.smR,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.smd,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
-          color: unlocked ? Colors.white : AppColors.cream,
-          borderRadius: BorderRadius.circular(18),
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: AppRadius.smR,
           border: Border.all(
-            color: unlocked
-                ? color.withValues(alpha: 0.4)
-                : AppColors.textMuted.withValues(alpha: 0.18),
+            color: theme.colorScheme.outline,
+            width: AppStroke.hairline,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: unlocked ? 0.22 : 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                unlocked ? badge.icon : Icons.lock_outline_rounded,
-                color: color,
-                size: 26,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              unlocked ? badge.title : '?',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: unlocked ? AppColors.textPrimary : AppColors.textMuted,
-              ),
-            ),
+            Icon(badge.icon, color: AppColors.accent, size: 18),
+            const SizedBox(width: AppSpacing.sm),
+            Text(badge.title, style: theme.textTheme.titleLarge),
           ],
         ),
       ),
@@ -116,45 +107,24 @@ class _BadgeCard extends StatelessWidget {
   void _showDetails(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (_) {
         final theme = Theme.of(context);
         return Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.xl,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: badge.color.withValues(alpha: unlocked ? 0.22 : 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  unlocked ? badge.icon : Icons.lock_outline_rounded,
-                  color: unlocked ? badge.color : AppColors.textMuted,
-                  size: 40,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                unlocked ? badge.title : 'Пока скрыто',
-                style: theme.textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                unlocked
-                    ? badge.description
-                    : 'Этот знак откроется неожиданно. '
-                        'Никаких счётчиков и спойлеров.',
-                style: theme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
+              Icon(badge.icon, color: AppColors.accent, size: 28),
+              const SizedBox(height: AppSpacing.md),
+              Text(badge.title, style: theme.textTheme.headlineMedium),
+              const SizedBox(height: AppSpacing.smd),
+              Text(badge.description, style: theme.textTheme.bodyLarge),
             ],
           ),
         );

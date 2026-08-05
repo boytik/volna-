@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/launch.dart';
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/specialists.dart';
 import '../../main.dart';
 
@@ -88,7 +89,7 @@ class _HelpScreenState extends State<HelpScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.peachSoft.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,11 +168,11 @@ class _ContactCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: () => _open(context),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -228,10 +229,10 @@ class _PrepareForSessionCard extends StatelessWidget {
 
     return Material(
       color: AppColors.peachSoft.withValues(alpha: 0.7),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -245,7 +246,7 @@ class _PrepareForSessionCard extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.note_alt_rounded,
-                  color: Colors.white,
+                  color: AppColors.paperLift,
                   size: 22,
                 ),
               ),

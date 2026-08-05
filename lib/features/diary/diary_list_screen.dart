@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/local/diary_storage.dart';
 import '../../main.dart';
 
@@ -95,7 +96,7 @@ class _DiaryListScreenState extends State<DiaryListScreen>
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.peachSoft.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Text(
                   'Пока пусто. Любая первая запись — это победа.',
@@ -138,14 +139,14 @@ class _ReopenBanner extends StatelessWidget {
 
     return Material(
       color: AppColors.coral.withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(color: AppColors.coral, width: 1.2),
           ),
           child: Row(
@@ -203,11 +204,11 @@ class _NewEntryTile extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -272,14 +273,14 @@ class _EntryCard extends StatelessWidget {
     final isSealed = isEnvelope && entry.envelopeStatus == 'sealed';
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: isEnvelope
             ? () =>
                 Navigator.of(context).pushNamed('/diary/envelope/${entry.id}')
             : null,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

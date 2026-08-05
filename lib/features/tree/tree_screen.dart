@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/local/quest_storage.dart';
 import '../../main.dart';
 import 'tree_painter.dart';
@@ -13,15 +14,9 @@ class TreeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final drops = questStorage.drops;
-    final daysSince = questStorage.daysSinceActivity;
-    final didToday = daysSince == 0;
-    final mood = moodFromActivity(
-      didSomethingToday: didToday,
-      daysSinceActivity: daysSince,
-    );
+    final rings = questStorage.weeksLived;
+    final lights = questStorage.recentActivityAges();
     final week = questStorage.activityLastDays(7);
-    final completedThisWeek = week.fold<int>(0, (s, d) => s + d.count);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,50 +28,50 @@ class TreeScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            0,
+            AppSpacing.marginRight,
+            AppSpacing.xl,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Твоё древо', style: theme.textTheme.displayLarge),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.smd),
               Text(
-                'Каждый шаг — капля. Каждая капля помогает дереву расти. '
-                'Пропуск дня — не страшно. Древо помнит корни.',
-                style: theme.textTheme.bodyMedium,
+                'Оно уже выросло — его не надо выращивать. '
+                'Кольца у корней добавляются за каждую прожитую неделю, '
+                'просто потому что она прошла, а ты есть.',
+                style: theme.textTheme.bodyLarge,
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [AppColors.peachSoft, AppColors.peach],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                  child: TreeView(
-                    drops: drops,
-                    mood: mood,
-                    size: const Size(220, 280),
-                  ),
+              const SizedBox(height: AppSpacing.xl),
+              Center(
+                child: TreeView(
+                  rings: rings,
+                  lights: lights,
+                  size: const Size(240, 300),
                 ),
               ),
-              const SizedBox(height: 20),
-              _StageRow(drops: drops),
-              const SizedBox(height: 24),
-              Text('Эта неделя', style: theme.textTheme.titleLarge),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xl),
+              Text(ringsPhrase(rings), style: theme.textTheme.headlineMedium),
+              const SizedBox(height: AppSpacing.sm),
               Text(
-                '$completedThisWeek ${_stepsWord(completedThisWeek)} '
-                'за последние 7 дней',
+                'Следы гаснут за десять дней, дерево остаётся. '
+                'Ничего здесь не вянет и не засыпает.',
                 style: theme.textTheme.bodyMedium,
               ),
-              const SizedBox(height: 14),
-              _WeekChart(week: week),
-              const SizedBox(height: 24),
-              _MoodNote(mood: mood, daysSince: daysSince),
+              const SizedBox(height: AppSpacing.xxl),
+              Text('Последние дни', style: theme.textTheme.titleLarge),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                _weekPhrase(week),
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _WeekMarks(week: week),
+              const SizedBox(height: AppSpacing.xxl),
+              _SeasonNote(season: seasonForMonth(DateTime.now().month)),
             ],
           ),
         ),
@@ -84,70 +79,20 @@ class TreeScreen extends StatelessWidget {
     );
   }
 
-  String _stepsWord(int n) {
-    final mod10 = n % 10;
-    final mod100 = n % 100;
-    if (mod100 >= 11 && mod100 <= 14) return 'шагов';
-    if (mod10 == 1) return 'шаг';
-    if (mod10 >= 2 && mod10 <= 4) return 'шага';
-    return 'шагов';
+  /// Никаких «0 шагов за неделю» — пустая неделя не комментируется
+  /// числом, потому что это была бы цифра, которая упала.
+  String _weekPhrase(List<DayActivity> week) {
+    final days = week.where((d) => d.count > 0).length;
+    if (days == 0) return 'На этой неделе ты просто была. Этого достаточно.';
+    return 'Отмечено дней: $days';
   }
 }
 
-class _StageRow extends StatelessWidget {
-  const _StageRow({required this.drops});
-  final int drops;
-
-  static const _stages = [
-    ('Росток', 0),
-    ('Саженец', 5),
-    ('Деревце', 20),
-    ('Цветущее', 50),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: List.generate(_stages.length, (i) {
-            final reached = drops >= _stages[i].$2;
-            return Expanded(
-              child: Column(
-                children: [
-                  Container(
-                    width: 14,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: reached
-                          ? AppColors.sageDeep
-                          : AppColors.textMuted.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _stages[i].$1,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: reached ? AppColors.textPrimary : AppColors.textMuted,
-                      fontWeight: reached ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-}
-
-class _WeekChart extends StatelessWidget {
-  const _WeekChart({required this.week});
+/// Отметки последних семи дней. Рисуется только то, что было:
+/// у дня без отметки нет ни контура, ни заливки, ни подписи —
+/// свои пропуски невозможно увидеть, потому что они не отрисованы.
+class _WeekMarks extends StatelessWidget {
+  const _WeekMarks({required this.week});
   final List<DayActivity> week;
 
   static const _weekdayShort = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
@@ -157,133 +102,80 @@ class _WeekChart extends StatelessWidget {
     final theme = Theme.of(context);
     final today = DateTime.now();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: week.map((d) {
-          final isToday = d.date.year == today.year &&
-              d.date.month == today.month &&
-              d.date.day == today.day;
-          final weekdayIndex = (d.date.weekday - 1) % 7;
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    height: 80,
-                    alignment: Alignment.bottomCenter,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (d.evening)
-                          Container(
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: AppColors.sageDeep,
-                              borderRadius: BorderRadius.circular(4),
+    return Row(
+      children: week.map((d) {
+        final isToday = d.date.year == today.year &&
+            d.date.month == today.month &&
+            d.date.day == today.day;
+        final weekdayIndex = (d.date.weekday - 1) % 7;
+
+        return Expanded(
+          child: Column(
+            children: [
+              SizedBox(
+                height: 20,
+                child: d.count == 0
+                    ? null
+                    : Center(
+                        child: Container(
+                          width: d.count > 1 ? 16 : 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.marked,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(AppRadius.sm),
                             ),
                           ),
-                        if (d.evening && d.morning) const SizedBox(height: 2),
-                        if (d.morning)
-                          Container(
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: AppColors.saffron,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        if (!d.morning && !d.evening)
-                          Container(
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: AppColors.textMuted.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _weekdayShort[weekdayIndex],
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isToday ? AppColors.terracotta : AppColors.textMuted,
-                      fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
-                    ),
-                  ),
-                ],
+                        ),
+                      ),
               ),
-            ),
-          );
-        }).toList(),
-      ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                _weekdayShort[weekdayIndex],
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isToday ? AppColors.accentPress : null,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-class _MoodNote extends StatelessWidget {
-  const _MoodNote({required this.mood, required this.daysSince});
-  final TreeMood mood;
-  final int daysSince;
+/// Приложение меняется от того, что прошло время, а не от того,
+/// справился ли человек.
+class _SeasonNote extends StatelessWidget {
+  const _SeasonNote({required this.season});
+  final Season season;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final (icon, text) = switch (mood) {
-      TreeMood.vibrant => (
-          Icons.eco_rounded,
-          'Древо живое и сегодня уже полито. Можно отдыхать.',
-        ),
-      TreeMood.pale => (
-          Icons.favorite_border_rounded,
-          'Рада, что ты здесь. Сегодня может быть один маленький шаг — '
-              'или просто этот момент рядом с древом.',
-        ),
-      TreeMood.sleeping => (
-          Icons.favorite_border_rounded,
-          'С возвращением. Прошло $daysSince ${_daysWord(daysSince)} — '
-              'и это нормально. Корни живы, древо ждало.',
-        ),
+    final text = switch (season) {
+      Season.winter => 'Зима. Крона реже — так и должно быть.',
+      Season.spring => 'Весна. Дерево прибавляет само.',
+      Season.summer => 'Лето. Крона самая полная в году.',
+      Season.autumn => 'Осень. Под деревом появились листья.',
     };
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.peachSoft.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(16),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: AppRadius.smR,
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: AppStroke.hairline,
+        ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppColors.terracotta, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: theme.textTheme.bodyLarge?.color,
+        ),
       ),
     );
-  }
-
-  String _daysWord(int n) {
-    final mod10 = n % 10;
-    final mod100 = n % 100;
-    if (mod100 >= 11 && mod100 <= 14) return 'дней';
-    if (mod10 == 1) return 'день';
-    if (mod10 >= 2 && mod10 <= 4) return 'дня';
-    return 'дней';
   }
 }

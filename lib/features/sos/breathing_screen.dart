@@ -217,19 +217,12 @@ class _BreathCircle extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(
+          // Плоская заливка без градиента и свечения: теней в системе
+          // нет. Замена круга на линию горизонта («вдох поднимает
+          // горизонт») зафиксирована в DESIGN.md и отложена.
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const RadialGradient(
-              colors: [AppColors.sage, AppColors.sageDeep],
-              radius: 0.9,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.sage.withValues(alpha: 0.5),
-                blurRadius: 40 * scale,
-                spreadRadius: 4,
-              ),
-            ],
+            color: AppColors.markedWash,
           ),
         ),
       ),

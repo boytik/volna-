@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
-import '../../core/widgets/quest_card.dart';
+import '../../core/theme/tokens.dart';
 import '../../core/widgets/sos_button.dart';
 import '../../data/content/quests.dart';
 import '../../data/content/survival.dart';
@@ -12,6 +12,17 @@ import '../badges/new_badge_overlay.dart';
 import '../quest/quest_service.dart';
 import '../tree/tree_view.dart';
 
+/// Главный экран как плакат, а не как дашборд.
+///
+/// Первый экран несёт ровно четыре вещи: метку времени суток,
+/// крупную фразу, две равноправные строки выбора и полосу SOS.
+/// Всё остальное — древо, дневник, конверты, инструменты — уходит
+/// ниже сгиба и читается как следующие страницы той же бумаги.
+///
+/// Раньше здесь стояли семь элементов одной формы (скруглённый
+/// прямоугольник + круглая иконка + заголовок + подзаголовок +
+/// шеврон). Приоритета не было: в кризисе SOS приходилось искать
+/// чтением.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -57,176 +68,136 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isMorning = DateTime.now().hour < 17;
     final slot = isMorning ? QuestSlot.morning : QuestSlot.evening;
     final isDone = questStorage.isDoneToday(slot);
-    final drops = questStorage.drops;
-    final daysSince = questStorage.daysSinceActivity;
-    final didToday = daysSince == 0;
-    final treeMood = moodFromActivity(
-      didSomethingToday: didToday,
-      daysSinceActivity: daysSince,
-    );
     final survivalMode = settingsStorage.survivalMode;
-    final readyEnvelopes = diaryStorage.envelopesReadyToReopen;
-    final topTool = toolBoxStorage.topTool();
+    final quest = QuestPicker.pickToday(slot);
+    final survival = survivalFor(slot);
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HomeHeader(isMorning: isMorning),
-              const SizedBox(height: 28),
-              if (readyEnvelopes.isNotEmpty) ...[
-                _EnvelopeBanner(
-                  count: readyEnvelopes.length,
-                  onTap: () => context.push(
-                    '/diary/envelope/${readyEnvelopes.first.id}',
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              TreeCard(
-                drops: drops,
-                mood: treeMood,
-                onTap: () => _go('/tree'),
-              ),
-              const SizedBox(height: 28),
-              SosButton(onTap: () => _go('/sos')),
-              const SizedBox(height: 12),
-              _VentCard(onTap: () => _go('/vent')),
-              const SizedBox(height: 28),
-              if (survivalMode)
-                _SurvivalCard(
-                  isMorning: isMorning,
-                  isDone: isDone,
-                  onTap: () => _go(
-                    isMorning ? '/survival/morning' : '/survival/evening',
-                  ),
-                )
-              else if (isDone)
-                _DoneCard(
-                  label: isMorning ? 'Утренний шаг' : 'Вечерний ритуал',
-                  questTitle: QuestPicker.pickToday(slot).title,
-                  accent: isMorning ? AppColors.saffron : AppColors.sageDeep,
-                )
-              else ...[
-                QuestCard(
-                  label: isMorning ? 'Утренний шаг' : 'Вечерний ритуал',
-                  title: QuestPicker.pickToday(slot).title,
-                  description: QuestPicker.pickToday(slot).description,
-                  duration: QuestPicker.pickToday(slot).duration,
-                  accent: isMorning ? AppColors.saffron : AppColors.sageDeep,
-                  onStart: () => _go(
-                    isMorning ? '/quest/morning' : '/quest/evening',
-                  ),
-                  onSkip: () {},
-                ),
-                if (topTool != null) ...[
-                  const SizedBox(height: 12),
-                  _ToolboxSuggestion(
-                    tool: topTool,
-                    onTap: () => _go(topTool.route),
-                  ),
-                ],
-              ],
-              const SizedBox(height: 16),
-              Center(
-                child: Text(
-                  'Один маленький шаг лучше, чем сто мыслей о большом',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
-                  ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HomeMasthead(isMorning: isMorning),
+                    _Opening(isDone: isDone, isMorning: isMorning),
+                    const SizedBox(height: AppSpacing.huge),
+                    _Choice(
+                      isDone: isDone,
+                      survivalMode: survivalMode,
+                      questTitle: quest.title,
+                      questDuration: quest.duration,
+                      survivalTitle: survival.title,
+                      onFull: () => _go(
+                        isMorning ? '/quest/morning' : '/quest/evening',
+                      ),
+                      onShort: () => _go(
+                        isMorning ? '/survival/morning' : '/survival/evening',
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.huge),
+                    _BelowFold(onGo: _go),
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          // Полоса вровень с краем: без отступов и без радиуса.
+          // SafeArea здесь намеренно нет — SosButton сам забирает
+          // безопасную зону внутрь, иначе под ним остаётся щель.
+          SosButton(onTap: () => _go('/sos')),
+        ],
       ),
     );
   }
 }
 
-class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key, required this.isMorning});
+/// Шапка: метка времени суток слева, вход в разделы справа.
+/// Публичная, потому что её сторожит регрессионный тест на переполнение
+/// строки на узких экранах — см. `test/home_layout_test.dart`.
+class HomeMasthead extends StatelessWidget {
+  const HomeMasthead({super.key, required this.isMorning});
   final bool isMorning;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final greeting = isMorning ? 'Доброе утро' : 'Тихий вечер';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'ВОЛНА',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: AppColors.terracotta,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 3,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.axis,
+        AppSpacing.xxl,
+        AppSpacing.md,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                (isMorning ? 'Утро' : 'Вечер').toUpperCase(),
+                style: theme.textTheme.labelSmall,
               ),
-            ),
-            // Пять иконок в фиксированном Row переполняли строку на узких
-            // экранах (iPhone SE) — отдаём им остаток ширины и сжимаем
-            // отступы, вместо того чтобы ловить RenderFlex overflow.
-            Flexible(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _NavIcon(
-                    icon: Icons.workspace_premium_rounded,
-                    tooltip: 'Знаки присутствия',
-                    route: '/badges',
-                  ),
-                  _NavIcon(
-                    icon: Icons.support_agent_rounded,
-                    tooltip: 'Связь со специалистом',
-                    route: '/help',
-                  ),
-                  _NavIcon(
-                    icon: Icons.edit_note_rounded,
-                    tooltip: 'Дневник',
-                    route: '/diary',
-                  ),
-                  _NavIcon(
-                    icon: Icons.menu_book_rounded,
-                    tooltip: 'Библиотека',
-                    route: '/library',
-                  ),
-                  _NavIcon(
-                    icon: Icons.tune_rounded,
-                    tooltip: 'Настройки',
-                    route: '/settings',
-                  ),
-                ],
+              // Пять иконок в фиксированном Row переполняли строку на
+              // узких экранах (iPhone SE) — отдаём им остаток ширины.
+              // Spacer здесь ставить нельзя: он конкурирует с Flexible
+              // за свободное место и снова роняет строку в overflow.
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    _NavIcon(
+                      icon: Icons.workspace_premium_outlined,
+                      tooltip: 'Знаки присутствия',
+                      route: '/badges',
+                    ),
+                    _NavIcon(
+                      icon: Icons.support_agent_outlined,
+                      tooltip: 'Связь со специалистом',
+                      route: '/help',
+                    ),
+                    _NavIcon(
+                      icon: Icons.edit_note_outlined,
+                      tooltip: 'Дневник',
+                      route: '/diary',
+                    ),
+                    _NavIcon(
+                      icon: Icons.menu_book_outlined,
+                      tooltip: 'Библиотека',
+                      route: '/library',
+                    ),
+                    _NavIcon(
+                      icon: Icons.tune_outlined,
+                      tooltip: 'Настройки',
+                      route: '/settings',
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(greeting, style: theme.textTheme.displayLarge),
-        const SizedBox(height: 6),
-        Text(
-          'Сегодня — один маленький шаг. Не марафон.',
-          style: theme.textTheme.bodyMedium,
-        ),
-      ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Container(
+            width: 96,
+            height: AppStroke.hairline,
+            color: theme.colorScheme.outline,
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// Иконка навигации в шапке. Компактнее стандартного IconButton
-/// (у того минимальная ширина 48 и своя подложка), чтобы пять штук
-/// помещались в строку даже на самых узких экранах.
 class _NavIcon extends StatelessWidget {
   const _NavIcon({
     required this.icon,
@@ -247,67 +218,97 @@ class _NavIcon extends StatelessWidget {
         radius: 22,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-          child: Icon(icon, color: AppColors.terracotta, size: 24),
+          child: Icon(icon, color: AppColors.inkSoft, size: 22),
         ),
       ),
     );
   }
 }
 
-class _DoneCard extends StatelessWidget {
-  const _DoneCard({
-    required this.label,
+/// Крупная фраза. Ни приветствия по имени, ни даты, ни единой цифры.
+class _Opening extends StatelessWidget {
+  const _Opening({required this.isDone, required this.isMorning});
+  final bool isDone;
+  final bool isMorning;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final String text;
+    if (isDone) {
+      text = 'Сегодня ты уже была здесь. Больше ничего не нужно.';
+    } else if (isMorning) {
+      text = 'Сегодня можно ничего не делать. Это тоже участие.';
+    } else {
+      text = 'День кончился, и ты его прожила. Этого достаточно.';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.axis,
+        AppSpacing.xxxl,
+        AppSpacing.marginRight,
+        0,
+      ),
+      child: Text(text, style: theme.textTheme.displayLarge),
+    );
+  }
+}
+
+/// Две строки бланка. Короткая версия набрана тем же кеглем и весом,
+/// что и полная: это равноправный выбор, а не «запасная кнопка».
+class _Choice extends StatelessWidget {
+  const _Choice({
+    required this.isDone,
+    required this.survivalMode,
     required this.questTitle,
-    required this.accent,
+    required this.questDuration,
+    required this.survivalTitle,
+    required this.onFull,
+    required this.onShort,
   });
-  final String label;
+
+  final bool isDone;
+  final bool survivalMode;
   final String questTitle;
-  final Color accent;
+  final String questDuration;
+  final String survivalTitle;
+  final VoidCallback onFull;
+  final VoidCallback onShort;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: accent.withValues(alpha: 0.3), width: 1.5),
-      ),
-      child: Row(
+    if (isDone) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.axis),
+        child: Text(
+          'Завтра будет следующий шаг. Или не будет.',
+          style: theme.textTheme.bodyLarge,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.axis),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+          if (!survivalMode)
+            _FormLine(
+              text: '$questTitle · $questDuration',
+              color: AppColors.accentPress,
+              onTap: onFull,
             ),
-            child: Icon(Icons.check_rounded, color: accent, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$label · сделано',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: accent,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(questTitle, style: theme.textTheme.titleLarge),
-                const SizedBox(height: 4),
-                Text(
-                  'Завтра будет следующий шаг',
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
+          _FormLine(
+            text: survivalMode
+                ? '$survivalTitle · 40 секунд'
+                : 'или короткая версия — 40 секунд',
+            color: survivalMode
+                ? AppColors.accentPress
+                : theme.textTheme.bodyLarge?.color,
+            onTap: onShort,
           ),
         ],
       ),
@@ -315,275 +316,192 @@ class _DoneCard extends StatelessWidget {
   }
 }
 
-class _SurvivalCard extends StatelessWidget {
-  const _SurvivalCard({
-    required this.isMorning,
-    required this.isDone,
+/// Строка бланка: текст и волосяная линейка до правого края.
+class _FormLine extends StatelessWidget {
+  const _FormLine({
+    required this.text,
+    required this.color,
     required this.onTap,
   });
 
-  final bool isMorning;
-  final bool isDone;
+  final String text;
+  final Color? color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final q = survivalFor(
-      isMorning ? QuestSlot.morning : QuestSlot.evening,
-    );
 
-    return Material(
-      color: AppColors.coral.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: isDone ? null : onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppColors.coral.withValues(alpha: 0.5),
-              width: 1.2,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.only(
+          top: AppSpacing.md,
+          bottom: AppSpacing.smd,
+        ),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: theme.colorScheme.outline,
+              width: AppStroke.hairline,
             ),
           ),
+        ),
+        child: Text(
+          text,
+          style: theme.textTheme.labelLarge?.copyWith(color: color),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ниже сгиба — следующие страницы той же бумаги, разделённые
+/// волосяными линейками. Не карточки.
+class _BelowFold extends StatelessWidget {
+  const _BelowFold({required this.onGo});
+  final Future<void> Function(String) onGo;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final readyEnvelopes = diaryStorage.envelopesReadyToReopen;
+    final topTool = toolBoxStorage.topTool();
+    final rings = questStorage.weeksLived;
+    final lights = questStorage.recentActivityAges();
+
+    final rows = <Widget>[
+      _PageRow(
+        title: 'Просто выговориться',
+        note: 'Я выслушаю и подберу одну вещь, которая поможет сейчас',
+        leavesDevice: true,
+        onTap: () => onGo('/vent'),
+      ),
+      if (readyEnvelopes.isNotEmpty)
+        _PageRow(
+          title: readyEnvelopes.length == 1
+              ? 'Один конверт ждёт'
+              : '${readyEnvelopes.length} конверта ждут',
+          note: 'Открыть, отложить ещё, или выбросить',
+          onTap: () => onGo('/diary/envelope/${readyEnvelopes.first.id}'),
+        ),
+      if (topTool != null)
+        _PageRow(
+          title: topTool.title,
+          note: 'Что тебе обычно помогает',
+          onTap: () => onGo(topTool.route),
+        ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.axis),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.coral,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'РЕЖИМ ВЫЖИВАНИЯ',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text('30 секунд', style: theme.textTheme.bodySmall),
-                ],
+              ...rows,
+              TreeBlock(
+                rings: rings,
+                lights: lights,
+                onTap: () => onGo('/tree'),
               ),
-              const SizedBox(height: 14),
-              Text(q.title, style: theme.textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              Text(q.action, style: theme.textTheme.bodyMedium),
-              const SizedBox(height: 16),
-              if (isDone)
-                Row(
-                  children: const [
-                    Icon(
-                      Icons.check_rounded,
-                      color: AppColors.sageDeep,
-                      size: 18,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'Сделано на сегодня',
-                      style: TextStyle(color: AppColors.sageDeep),
-                    ),
-                  ],
-                )
-              else
-                FilledButton(
-                  onPressed: onTap,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.terracotta,
-                  ),
-                  child: const Text('Сделать'),
-                ),
             ],
           ),
         ),
-      ),
+        const SizedBox(height: AppSpacing.lg),
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.axis, right: 64),
+          child: Text(
+            'Один маленький шаг лучше, чем сто мыслей о большом',
+            style: theme.textTheme.bodySmall,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _ToolboxSuggestion extends StatelessWidget {
-  const _ToolboxSuggestion({required this.tool, required this.onTap});
-  final ToolKey tool;
+class _PageRow extends StatelessWidget {
+  const _PageRow({
+    required this.title,
+    required this.note,
+    required this.onTap,
+    this.leavesDevice = false,
+  });
+
+  final String title;
+  final String note;
   final VoidCallback onTap;
+
+  /// Единственный внешний вызов в приложении — распознавание речи и
+  /// ответ в «выговориться». Знак стоит там и только там.
+  final bool leavesDevice;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Material(
-      color: AppColors.peachSoft.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.favorite_rounded,
-                color: AppColors.terracotta,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Что тебе обычно помогает',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.terracotta,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(tool.title, style: theme.textTheme.titleLarge),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 12,
-                color: AppColors.textMuted,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Карточка «Выговориться» — между SOS и квестом, мягкого тона.
-class _VentCard extends StatelessWidget {
-  const _VentCard({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: AppColors.sage.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.sageDeep.withValues(alpha: 0.3),
-              width: 1,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outline,
+              width: AppStroke.hairline,
             ),
           ),
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.sageDeep.withValues(alpha: 0.22),
-                  shape: BoxShape.circle,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Flexible(
+                  child: Text(title, style: theme.textTheme.titleLarge),
                 ),
-                child: const Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  color: AppColors.sageDeep,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Просто выговориться',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Я выслушаю и подберу одну вещь, которая поможет сейчас',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 12,
-                color: AppColors.textMuted,
-              ),
-            ],
-          ),
+                if (leavesDevice) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  const LeavesDeviceMark(),
+                ],
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(note, style: theme.textTheme.bodyMedium),
+          ],
         ),
       ),
     );
   }
 }
 
-class _EnvelopeBanner extends StatelessWidget {
-  const _EnvelopeBanner({required this.count, required this.onTap});
-  final int count;
-  final VoidCallback onTap;
+/// Знак «уходит с телефона». Дневник, чек-ины и записи его не имеют —
+/// и это видно глазом, а не только написано в политике.
+class LeavesDeviceMark extends StatelessWidget {
+  const LeavesDeviceMark({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Material(
-      color: AppColors.coral.withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.coral, width: 1.2),
+    return Tooltip(
+      message: 'Этот раздел отправляет запись на сервер распознавания',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.smR,
+          border: Border.all(
+            color: AppColors.accent,
+            width: AppStroke.hairline,
           ),
-          child: Row(
-            children: [
-              const Icon(Icons.mail_rounded, color: AppColors.coral),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      count == 1
-                          ? 'Один конверт ждёт'
-                          : '$count конверта ждут',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Открыть, отложить ещё, или выбросить',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 14,
-                color: AppColors.terracotta,
-              ),
-            ],
-          ),
+        ),
+        child: Text(
+          'УХОДИТ НА СЕРВЕР',
+          style: Theme.of(context)
+              .textTheme
+              .labelSmall
+              ?.copyWith(color: AppColors.accentPress),
         ),
       ),
     );

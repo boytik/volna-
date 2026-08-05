@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
 import '../../data/content/phrases.dart';
 
 /// Главный экран библиотеки: категории фраз + ссылка на внешние ресурсы.
@@ -81,11 +82,11 @@ class _CategoryTile extends StatelessWidget {
     final accent = _accents[category.id] ?? AppColors.terracotta;
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      color: AppColors.paperLift,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -95,7 +96,7 @@ class _CategoryTile extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: accent,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
               ),
               const SizedBox(width: 16),
@@ -137,10 +138,10 @@ class _ResourcesTile extends StatelessWidget {
 
     return Material(
       color: AppColors.peachSoft,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Row(
@@ -149,7 +150,7 @@ class _ResourcesTile extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: AppColors.paperLift.withValues(alpha: 0.6),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
