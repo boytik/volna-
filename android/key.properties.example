@@ -1,0 +1,14 @@
+# Шаблон. Скопируй в key.properties и пропиши значения.
+# Сам key.properties и файл хранилища в git не хранятся (см. .gitignore).
+#
+# Создать хранилище:
+#   keytool -genkey -v -keystore ~/volna-upload.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Без этого файла release-сборка подписывается debug-ключом:
+# локально запустить можно, в Google Play такой артефакт не примут.
+
+storeFile=/absolute/path/to/volna-upload.jks
+storePassword=
+keyAlias=upload
+keyPassword=
