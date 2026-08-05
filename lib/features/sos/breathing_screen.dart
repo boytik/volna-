@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/breath_flower.dart';
 import '../../core/widgets/helped_button.dart';
 import '../../data/local/toolbox_storage.dart';
 
@@ -153,7 +154,7 @@ class _BreathingScreenState extends State<BreathingScreen>
             const Spacer(),
             AnimatedBuilder(
               animation: Listenable.merge([_controller, _spin]),
-              builder: (_, _) => _BreathFlower(
+              builder: (_, _) => BreathFlower(
                 // Контроллер ходит 0.5..1.0 — приводим к 0..1.
                 level: (_controller.value - 0.5) * 2,
                 rotation: _spin.value * 2 * math.pi,
@@ -232,69 +233,4 @@ class _BreathingScreenState extends State<BreathingScreen>
       ),
     );
   }
-}
-
-/// Цветок дыхания в духе Apple Watch: шесть лепестков расходятся на
-/// вдохе и сходятся на выдохе, всё это медленно вращается.
-///
-/// Почему не один круг: расширяющийся круг — главное клише категории,
-/// и он не даёт ощущения продолжающегося движения на задержках. Лепестки
-/// на задержке продолжают вращаться, и человеку есть за чем следить,
-/// пока он не дышит.
-///
-/// Заливка плоская, с прозрачностью: перекрытия лепестков сами дают
-/// глубину, поэтому ни градиента, ни тени не нужно.
-class _BreathFlower extends StatelessWidget {
-  const _BreathFlower({required this.level, required this.rotation});
-
-  /// 0 — лепестки собраны в центре, 1 — разошлись.
-  final double level;
-  final double rotation;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 240,
-      height: 240,
-      child: CustomPaint(
-        painter: _FlowerPainter(level: level, rotation: rotation),
-      ),
-    );
-  }
-}
-
-class _FlowerPainter extends CustomPainter {
-  _FlowerPainter({required this.level, required this.rotation});
-
-  final double level;
-  final double rotation;
-
-  static const _petals = 6;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final r = size.shortestSide / 2;
-    final petalR = r * 0.42;
-    // На нуле лепестки почти слиты — цветок не исчезает и не схлопывается
-    // в точку. На единице касаются внешнего края.
-    final distance = (r - petalR) * (0.18 + 0.82 * level);
-
-    final paint = Paint()
-      ..color = AppColors.markedWash.withValues(alpha: 0.42)
-      ..isAntiAlias = true;
-
-    for (var i = 0; i < _petals; i++) {
-      final angle = rotation + i * 2 * math.pi / _petals;
-      canvas.drawCircle(
-        center + Offset(math.cos(angle), math.sin(angle)) * distance,
-        petalR,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _FlowerPainter old) =>
-      old.level != level || old.rotation != rotation;
 }

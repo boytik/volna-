@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/breath_flower.dart';
 import '../../core/widgets/helped_button.dart';
 import '../../data/content/sos_techniques.dart';
 import '../../data/local/toolbox_storage.dart';
@@ -95,16 +96,24 @@ class _TechniqueScreenState extends State<TechniqueScreen> {
           style: theme.textTheme.bodySmall,
         ),
         const SizedBox(height: 24),
+        // У дыхательных техник вместо иконки — живой цветок в темпе
+        // самой техники: дышать «за картинкой» проще, чем считать
+        // про себя, читая инструкцию.
         Center(
-          child: Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: tech.accent.withValues(alpha: 0.18),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(tech.icon, color: tech.accent, size: 40),
-          ),
+          child: tech.breath != null
+              ? AmbientBreathFlower(
+                  inhale: Duration(seconds: tech.breath!.inhale),
+                  exhale: Duration(seconds: tech.breath!.exhale),
+                )
+              : Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: tech.accent.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(tech.icon, color: tech.accent, size: 40),
+                ),
         ),
         const SizedBox(height: 24),
         Text(step.heading, style: theme.textTheme.headlineMedium),

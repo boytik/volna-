@@ -56,6 +56,7 @@ class SosTechnique {
     required this.accent,
     this.contraindication,
     this.routeOverride,
+    this.breath,
   });
 
   final String id;
@@ -71,6 +72,13 @@ class SosTechnique {
   /// Если техника имеет специальный экран (например, дыхание «Квадрат»),
   /// сюда кладём маршрут вместо генерируемых шагов.
   final String? routeOverride;
+
+  /// Темп дыхания в секундах для техник, где дыхание и есть упражнение.
+  /// Экран техники рисует по нему цветок, чтобы человеку было за чем
+  /// следить, а не только считать про себя. Темп берём из самой техники:
+  /// у удлинённого выдоха выдох вдвое длиннее вдоха, и картинка обязана
+  /// показывать именно это, иначе она спорит с текстом инструкции.
+  final ({int inhale, int exhale})? breath;
 }
 
 const _existingBreathing = SosTechnique(
@@ -117,6 +125,7 @@ const _existingSelfCompassion = SosTechnique(
 // ──────────────── Из ТЗ ────────────────
 
 const physiologicalSigh = SosTechnique(
+  breath: (inhale: 3, exhale: 6),
   id: 'physiological_sigh',
   title: 'Двойной вдох',
   triggers: [SosTrigger.panic, SosTrigger.anxiety],
@@ -151,6 +160,7 @@ const physiologicalSigh = SosTechnique(
 );
 
 const extendedExhale = SosTechnique(
+  breath: (inhale: 4, exhale: 8),
   id: 'extended_exhale',
   title: 'Удлинённый выдох «ффф»',
   triggers: [SosTrigger.anxiety, SosTrigger.panic],

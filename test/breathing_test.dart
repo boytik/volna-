@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:volna/core/theme/app_theme.dart';
+import 'package:volna/core/widgets/breath_flower.dart';
 import 'package:volna/core/widgets/breathing_horizon.dart';
+import 'package:volna/data/content/sos_techniques.dart';
 
 /// Единственная зацикленная анимация в приложении. Правило «бесконечных
 /// анимаций нет» ради неё ослаблено, поэтому её поведение сторожится
@@ -68,6 +70,64 @@ void main() {
       closeTo(start.top, 0.01),
       reason: 'reduce-motion не терпит исключений',
     );
+  });
+
+  group('Цветок в дыхательных техниках', () {
+    test('темп задан только у дыхательных, и выдох всегда длиннее', () {
+      final withBreath =
+          allTechniques.where((t) => t.breath != null).map((t) => t.id).toSet();
+
+      expect(
+        withBreath,
+        {'physiological_sigh', 'extended_exhale'},
+        reason: 'цветок ставится там, где дыхание и есть упражнение',
+      );
+
+      for (final t in allTechniques.where((t) => t.breath != null)) {
+        expect(
+          t.breath!.exhale,
+          greaterThan(t.breath!.inhale),
+          reason: '«${t.title}»: выдох обязан быть длиннее вдоха',
+        );
+      }
+    });
+
+    testWidgets('цветок дышит в темпе техники', (tester) async {
+      await tester.pumpWidget(
+        wrap(const AmbientBreathFlower(
+          inhale: Duration(seconds: 2),
+          exhale: Duration(seconds: 4),
+        )),
+      );
+      await tester.pump();
+
+      double level() => tester
+          .widget<BreathFlower>(find.byType(BreathFlower))
+          .level;
+
+      final start = level();
+      await tester.pump(const Duration(seconds: 2));
+      // Через вдох лепестки должны быть максимально разошедшимися.
+      expect(level(), greaterThan(start));
+
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 1));
+    });
+
+    testWidgets('при «уменьшении движения» цветок замирает', (tester) async {
+      await tester.pumpWidget(
+        wrap(const AmbientBreathFlower(), reduceMotion: true),
+      );
+      await tester.pump();
+
+      double level() => tester
+          .widget<BreathFlower>(find.byType(BreathFlower))
+          .level;
+
+      final start = level();
+      await tester.pump(const Duration(seconds: 3));
+      expect(level(), closeTo(start, 0.001));
+    });
   });
 
   test('выдох длиннее вдоха и темп дыхательный', () {
