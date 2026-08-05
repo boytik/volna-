@@ -39,21 +39,20 @@ void main() {
       });
     }
 
-    test('вкладок ровно четыре и «Практики» третьи', () {
+    test('вкладок ровно четыре', () {
       expect(AppBottomBar.tabs.length, 4);
-      expect(AppBottomBar.practicesIndex, 2);
-      expect(AppBottomBar.tabs[AppBottomBar.practicesIndex].label, 'Практики');
+      expect(AppBottomBar.tabs.map((t) => t.label).toList(),
+          ['Главная', 'Дневник', 'Практики', 'Настройки']);
     });
 
-    testWidgets('«Практики» — единственная заливка в баре', (tester) async {
+    testWidgets('все вкладки равны — ни одной заливки', (tester) async {
       await tester.pumpWidget(
         wrap(AppBottomBar(currentIndex: 0, onSelect: (_) {})),
       );
       await tester.pump();
 
-      // Material с непрозрачным цветом внутри бара должен быть один:
-      // главный вход находится по цвету, а не чтением подписей.
-      // Считаем только внутри бара: Scaffold снаружи тоже Material.
+      // Внутри бара не должно быть ни одного залитого Material:
+      // вкладки различаются только цветом текста и линейкой сверху.
       final filled = tester
           .widgetList<Material>(
             find.descendant(
@@ -63,7 +62,29 @@ void main() {
           )
           .where((m) => m.color != null && m.color != Colors.transparent)
           .length;
-      expect(filled, 1, reason: 'заливок в баре должно быть ровно одна');
+      expect(filled, 0, reason: 'ни одна вкладка не выделяется заливкой');
+    });
+
+    testWidgets('активная вкладка помечена утолщением линейки',
+        (tester) async {
+      for (final active in [0, 2, 3]) {
+        await tester.pumpWidget(
+          wrap(AppBottomBar(currentIndex: active, onSelect: (_) {})),
+        );
+        await tester.pump();
+
+        // Линейка бара: четыре сегмента, ровно один толщиной 2.
+        final thick = tester
+            .widgetList<Container>(
+              find.descendant(
+                of: find.byType(AppBottomBar),
+                matching: find.byType(Container),
+              ),
+            )
+            .where((c) => c.constraints?.maxHeight == 2)
+            .length;
+        expect(thick, 1, reason: 'утолщение должно быть ровно одно');
+      }
     });
 
     testWidgets('на вкладках нет ни одной цифры', (tester) async {

@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/tokens.dart';
 
-/// Нижний бар: четыре равных места, третье — «Практики».
+/// Нижний бар: четыре равные вкладки, ни одной выделенной заливкой.
 ///
-/// «Практики» это вкладка, а не отдельная кнопка сбоку: главный вход
-/// для тяжёлого момента должен стоять в ряду, а не выглядеть аварийным
-/// рычагом. Выделен цветом и заливкой, а не положением — глаз находит
-/// его по кораллу быстрее, чем считает миллиметры от края.
+/// Активная помечается **самой линейкой бара**: она идёт через весь
+/// экран, но над текущей вкладкой утолщается до 2px и берёт акцент.
+/// Это язычок оглавления, а не подчёркивание из веба — и он не требует
+/// отдельного элемента внутри вкладки, поэтому бар ниже на 8pt.
 ///
-/// Материал плоский: бумага и волосяная линейка сверху. Ни стекла,
-/// ни блюра, ни теней (см. DESIGN.md).
+/// Материал плоский: бумага и волосяная линейка. Ни стекла, ни блюра,
+/// ни теней, ни заливок (см. DESIGN.md).
 class AppBottomBar extends StatelessWidget {
   const AppBottomBar({
     super.key,
@@ -21,10 +21,6 @@ class AppBottomBar extends StatelessWidget {
 
   final int currentIndex;
   final ValueChanged<int> onSelect;
-
-  /// Индекс «Практик». Вынесен константой: на него завязана и заливка,
-  /// и тесты, которые следят, что главный вход не уехал.
-  static const practicesIndex = 2;
 
   static const tabs = <({String label, IconData icon})>[
     (label: 'Главная', icon: Icons.home_outlined),
@@ -40,6 +36,9 @@ class AppBottomBar extends StatelessWidget {
     // начнёт читаться как плавающая панель, а не как край страницы.
     final inset = MediaQuery.paddingOf(context).bottom;
     final theme = Theme.of(context);
+    final accent = theme.brightness == Brightness.dark
+        ? AppColors.nightAccent
+        : AppColors.accentPress;
 
     return Container(
       color: theme.scaffoldBackgroundColor,
@@ -47,37 +46,42 @@ class AppBottomBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            height: AppStroke.hairline,
-            color: theme.colorScheme.outline,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
-            ),
-            child: SizedBox(
-              height: 62,
-              child: Row(
-                children: [
-                  for (var i = 0; i < tabs.length; i++)
-                    Expanded(
-                      child: i == practicesIndex
-                          ? _PracticesTab(
-                              label: tabs[i].label,
-                              icon: tabs[i].icon,
-                              selected: i == currentIndex,
-                              onTap: () => onSelect(i),
-                            )
-                          : _Tab(
-                              label: tabs[i].label,
-                              icon: tabs[i].icon,
-                              selected: i == currentIndex,
-                              onTap: () => onSelect(i),
-                            ),
+          SizedBox(
+            height: 2,
+            child: Row(
+              children: [
+                for (var i = 0; i < tabs.length; i++)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          height: i == currentIndex ? 2 : AppStroke.hairline,
+                          color: i == currentIndex
+                              ? accent
+                              : theme.colorScheme.outline,
+                        ),
+                      ],
                     ),
-                ],
-              ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 54,
+            child: Row(
+              children: [
+                for (var i = 0; i < tabs.length; i++)
+                  Expanded(
+                    child: _Tab(
+                      label: tabs[i].label,
+                      icon: tabs[i].icon,
+                      selected: i == currentIndex,
+                      accent: accent,
+                      onTap: () => onSelect(i),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -91,42 +95,34 @@ class _Tab extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.selected,
+    required this.accent,
     required this.onTap,
   });
 
   final String label;
   final IconData icon;
   final bool selected;
+  final Color accent;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = selected
-        ? (theme.brightness == Brightness.dark
-            ? AppColors.nightAccent
-            : AppColors.accentPress)
-        : theme.textTheme.bodySmall?.color;
+    final color = selected ? accent : theme.textTheme.bodySmall?.color;
 
     return Semantics(
       selected: selected,
       button: true,
       child: InkResponse(
         onTap: onTap,
-        radius: 32,
+        radius: 34,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Активная вкладка помечена короткой линейкой сверху —
-            // печатной закладкой, а не заливкой и не пилюлей.
-            Container(
-              height: 2,
-              width: 18,
-              color: selected ? color : Colors.transparent,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Icon(icon, size: 21, color: color),
-            const SizedBox(height: 3),
+            Icon(icon, size: 22, color: color),
+            const SizedBox(height: AppSpacing.xs),
+            // «Настройки» — самая длинная подпись; на 320pt она иначе
+            // обрезается. scaleDown ужимает только там, где нужно.
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
@@ -135,78 +131,13 @@ class _Tab extends StatelessWidget {
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 11,
                   height: 1.1,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  letterSpacing: 0.2,
                   color: color,
                 ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// «Практики» — единственная заливка в баре. Это главный вход, когда
-/// тяжело, и он не должен искаться чтением подписей.
-class _PracticesTab extends StatelessWidget {
-  const _PracticesTab({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-        child: Material(
-          color: AppColors.sos,
-          borderRadius: AppRadius.smR,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: AppRadius.smR,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Та же закладка, что у обычных вкладок, только
-                // чернилами по кораллу.
-                Container(
-                  height: 2,
-                  width: 18,
-                  color: selected ? AppColors.sosInk : Colors.transparent,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                const Icon(Icons.spa_outlined,
-                    size: 21, color: AppColors.sosInk),
-                const SizedBox(height: 3),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 11,
-                      height: 1.1,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.sosInk,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
