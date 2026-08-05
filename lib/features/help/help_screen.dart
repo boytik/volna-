@@ -8,11 +8,10 @@ import '../../data/content/specialists.dart';
 import '../../main.dart';
 
 /// Экран связи со специалистом.
-/// 4 уровня:
-/// 1. Экстренный — телефон доверия (всегда первым).
-/// 2. Подготовиться к встрече — заметка для следующей терапии.
-/// 3. Онлайн-сервисы — каталоги психологов.
-/// 4. Сообщества и чаты бесплатной помощи.
+///
+/// Блоки: подготовка к встрече, телефоны доверия, онлайн-сервисы,
+/// бесплатные сообщества. Первые два меняются местами в зависимости
+/// от того, как экран открыли, — см. комментарий в `build`.
 class HelpScreen extends StatefulWidget {
   const HelpScreen({super.key});
 
@@ -32,17 +31,31 @@ class _HelpScreenState extends State<HelpScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Экран живёт в двух ролях. Как вкладка «Специалист» он корневой —
+    // кнопки «назад» там быть не должно, уходят другой вкладкой. Как
+    // `/specialist` он пушится из кризисного экрана и из ответа
+    // «выговориться», и вернуться назад обязательно нужно: человек
+    // пришёл сюда из разговора, а не из меню.
+    final canGoBack = context.canPop();
+
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      appBar: canGoBack
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              ),
+            )
+          : null,
       body: SafeArea(
-        top: false,
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            AppSpacing.lg,
+            AppSpacing.axis,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Связь со специалистом', style: theme.textTheme.displayLarge),
             const SizedBox(height: 8),
@@ -52,21 +65,27 @@ class _HelpScreenState extends State<HelpScreen> {
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 28),
-            _SectionTitle('СРОЧНО, СЕЙЧАС', accent: AppColors.coral),
-            const SizedBox(height: 12),
-            ...emergencyContacts.map(
-              (c) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ContactCard(contact: c, accent: AppColors.coral),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _SectionTitle('ПОДГОТОВИТЬСЯ К ВСТРЕЧЕ', accent: AppColors.terracotta),
-            const SizedBox(height: 12),
-            _PrepareForSessionCard(
-              onTap: () => context.push('/help/prepare'),
-            ),
-            const SizedBox(height: 24),
+
+            // Порядок зависит от того, как сюда пришли.
+            //
+            // Вкладка — это «зайти спокойно»: подготовка к встрече и есть
+            // то, зачем сюда обычно заходят, поэтому она первая.
+            //
+            // Но тот же экран пушится с кризисного (`/specialist`), и
+            // там первым обязан стоять телефон доверия. Человека, который
+            // только что написал «я не хочу жить», нельзя встречать
+            // предложением подготовиться к встрече на следующей неделе.
+            if (!canGoBack) ...[
+              ..._prepareSection(context),
+              const SizedBox(height: 24),
+              ..._emergencySection(),
+              const SizedBox(height: 24),
+            ] else ...[
+              ..._emergencySection(),
+              const SizedBox(height: 24),
+              ..._prepareSection(context),
+              const SizedBox(height: 24),
+            ],
             _SectionTitle('ОНЛАЙН-ПОМОЩЬ', accent: AppColors.sageDeep),
             const SizedBox(height: 12),
             ...onlineTherapy.map(
@@ -124,6 +143,25 @@ class _HelpScreenState extends State<HelpScreen> {
     );
   }
 }
+
+/// Телефоны доверия. Отдельным методом, потому что этот блок меняет
+/// место в зависимости от того, как открыли экран.
+List<Widget> _emergencySection() => [
+      _SectionTitle('СРОЧНО, СЕЙЧАС', accent: AppColors.coral),
+      const SizedBox(height: 12),
+      ...emergencyContacts.map(
+        (c) => Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _ContactCard(contact: c, accent: AppColors.coral),
+        ),
+      ),
+    ];
+
+List<Widget> _prepareSection(BuildContext context) => [
+      _SectionTitle('ПОДГОТОВИТЬСЯ К ВСТРЕЧЕ', accent: AppColors.terracotta),
+      const SizedBox(height: 12),
+      _PrepareForSessionCard(onTap: () => context.push('/help/prepare')),
+    ];
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text, {required this.accent});

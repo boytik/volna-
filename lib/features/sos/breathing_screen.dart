@@ -1,16 +1,21 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/theme/tokens.dart';
+import '../../core/widgets/breath_flower.dart';
 import '../../core/widgets/helped_button.dart';
 import '../../data/local/toolbox_storage.dart';
 
 /// Дыхание «Квадрат»: вдох 4с — задержка 4с — выдох 4с — задержка 4с.
-/// 5 циклов = ~80 секунд. Анимация: круг расширяется на вдохе, держится,
-/// сжимается на выдохе, держится. Лёгкая вибрация на смене фазы.
+/// 5 циклов = ~80 секунд. Цветок из шести лепестков расходится на вдохе,
+/// сходится на выдохе и всё время медленно вращается — на задержках
+/// вращение продолжается, поэтому взгляду есть за чем следить, пока
+/// человек не дышит. Лёгкая вибрация на смене фазы.
 enum _Phase {
   inhale('Вдох', 4),
   holdIn('Задержи', 4),
@@ -32,10 +37,13 @@ class BreathingScreen extends StatefulWidget {
 }
 
 class _BreathingScreenState extends State<BreathingScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const _totalCycles = 5;
 
   late final AnimationController _controller;
+  /// Вращение цветка. Отдельно от фазового контроллера: тот ходит
+  /// туда-обратно, и цветок на нём качался бы, а не вращался.
+  late final AnimationController _spin;
   _Phase _phase = _Phase.inhale;
   int _cycle = 1;
   Timer? _timer;
@@ -50,7 +58,23 @@ class _BreathingScreenState extends State<BreathingScreen>
       lowerBound: 0.5,
       upperBound: 1.0,
     );
+    _spin = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 32),
+    );
     _startPhase();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Расхождение лепестков — это само упражнение, оно остаётся всегда.
+    // Вращение декоративно, поэтому при «уменьшении движения» молчит.
+    if (AppMotion.reduced(context)) {
+      _spin.stop();
+    } else if (!_spin.isAnimating && !_finished) {
+      _spin.repeat();
+    }
   }
 
   void _startPhase() {
@@ -75,6 +99,7 @@ class _BreathingScreenState extends State<BreathingScreen>
     if (!mounted) return;
     if (_phase == _Phase.holdOut) {
       if (_cycle >= _totalCycles) {
+        _spin.stop();
         setState(() => _finished = true);
         HapticFeedback.mediumImpact();
         return;
@@ -89,6 +114,7 @@ class _BreathingScreenState extends State<BreathingScreen>
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
+    _spin.dispose();
     super.dispose();
   }
 
@@ -112,30 +138,38 @@ class _BreathingScreenState extends State<BreathingScreen>
   }
 
   Widget _buildBreathing(ThemeData theme) {
+    // Center обязателен. Column в Padding получает нежёсткие ограничения
+    // и сжимается по ширине до самого широкого ребёнка — здесь это
+    // цветок в 240pt. Без Center колонка прижималась к левому краю, и
+    // весь экран уезжал влево на 56pt.
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
-      child: Column(
-        children: [
-          Text(
-            'Цикл $_cycle из $_totalCycles',
-            style: theme.textTheme.bodyMedium,
-          ),
-          const Spacer(),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (_, _) {
-              return _BreathCircle(scale: _controller.value, phase: _phase);
-            },
-          ),
-          const SizedBox(height: 40),
-          Text(_phase.label, style: theme.textTheme.displayLarge),
-          const SizedBox(height: 8),
-          Text(
-            '${_phase.seconds} счёта',
-            style: theme.textTheme.bodyMedium,
-          ),
-          const Spacer(),
-        ],
+      child: Center(
+        child: Column(
+          children: [
+            Text(
+              'Цикл $_cycle из $_totalCycles',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const Spacer(),
+            AnimatedBuilder(
+              animation: Listenable.merge([_controller, _spin]),
+              builder: (_, _) => BreathFlower(
+                // Контроллер ходит 0.5..1.0 — приводим к 0..1.
+                level: (_controller.value - 0.5) * 2,
+                rotation: _spin.value * 2 * math.pi,
+              ),
+            ),
+            const SizedBox(height: 40),
+            Text(_phase.label, style: theme.textTheme.displayLarge),
+            const SizedBox(height: 8),
+            Text(
+              '${_phase.seconds} счёта',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }
@@ -190,41 +224,12 @@ class _BreathingScreenState extends State<BreathingScreen>
                 _phase = _Phase.inhale;
                 _finished = false;
               });
+              if (!AppMotion.reduced(context)) _spin.repeat();
               _startPhase();
             },
             child: const Text('Ещё раз'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BreathCircle extends StatelessWidget {
-  const _BreathCircle({required this.scale, required this.phase});
-
-  final double scale;
-  final _Phase phase;
-
-  @override
-  Widget build(BuildContext context) {
-    final size = 220.0 * scale;
-
-    return SizedBox(
-      width: 240,
-      height: 240,
-      child: Center(
-        child: Container(
-          width: size,
-          height: size,
-          // Плоская заливка без градиента и свечения: теней в системе
-          // нет. Замена круга на линию горизонта («вдох поднимает
-          // горизонт») зафиксирована в DESIGN.md и отложена.
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.markedWash,
-          ),
-        ),
       ),
     );
   }

@@ -22,6 +22,7 @@ dependencies:
   permission_handler: ^11.3.1
   http: ^1.2.2
   path_provider: ^2.1.5
+  speech_to_text: ^7.4.0
 
 dev_dependencies:
   flutter_test:

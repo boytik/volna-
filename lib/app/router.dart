@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/content/crisis_keywords.dart';
@@ -5,14 +6,14 @@ import '../data/content/quests.dart';
 import '../data/content/questionnaires.dart';
 import '../data/content/vent_keywords.dart';
 import '../data/local/diary_storage.dart';
-import '../features/badges/badges_screen.dart';
-import '../features/calendar/calendar_screen.dart';
 import '../features/diary/diary_list_screen.dart';
 import '../features/diary/diary_new_screen.dart';
 import '../features/diary/envelope_reopen_screen.dart';
 import '../features/help/help_screen.dart';
 import '../features/help/prepare_session_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/path/path_screen.dart';
+import '../features/practices/practices_screen.dart';
 import '../features/insights/insights_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/library/phrases_screen.dart';
@@ -27,16 +28,20 @@ import '../features/settings/settings_screen.dart';
 import '../features/sos/breathing_screen.dart';
 import '../features/sos/grounding_screen.dart';
 import '../features/sos/self_compassion_screen.dart';
-import '../features/sos/sos_menu_screen.dart';
 import '../features/sos/technique_screen.dart';
 import '../features/tree/tree_screen.dart';
 import '../features/vent/crisis_screen.dart';
+import '../features/vent/vent_choice_screen.dart';
 import '../features/vent/vent_response_screen.dart';
 import '../features/vent/vent_screen.dart';
 import '../features/vent/voice_vent_screen.dart';
 import '../main.dart';
+import 'shell_scaffold.dart';
+
+final _rootKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
+  navigatorKey: _rootKey,
   initialLocation: '/',
   redirect: (context, state) {
     final isOnboarding = state.matchedLocation == '/onboarding';
@@ -52,14 +57,68 @@ final appRouter = GoRouter(
     return null;
   },
   routes: [
+    // Онбординг и экран про данные — вне оболочки: до согласия
+    // навигации по разделам быть не должно.
     GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
-    GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
-    GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
-    GoRoute(path: '/privacy', builder: (_, _) => const PrivacyScreen()),
-    GoRoute(path: '/badges', builder: (_, _) => const BadgesScreen()),
 
-    // SOS
-    GoRoute(path: '/sos', builder: (_, _) => const SosMenuScreen()),
+    // Оболочка с нижним баром. Внутри — только корни вкладок; каждая
+    // ветка держит свой стек, поэтому переключение вкладок не теряет
+    // состояние (набранный текст в дневнике переживает уход и возврат).
+    StatefulShellRoute.indexedStack(
+      builder: (_, _, shell) => ShellScaffold(navigationShell: shell),
+      branches: [
+        StatefulShellBranch(
+          routes: [GoRoute(path: '/', builder: (_, _) => const HomeScreen())],
+        ),
+        // Дневник и «выговориться» — одна вкладка: и то и другое
+        // способ выложить, что внутри, разница только в том, пишешь
+        // ты или говоришь.
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/diary', builder: (_, _) => const DiaryListScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/practices',
+              builder: (_, _) => const PracticesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/help', builder: (_, _) => const HelpScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/settings',
+              builder: (_, _) => const SettingsScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
+
+    GoRoute(path: '/privacy', builder: (_, _) => const PrivacyScreen()),
+
+    // Тот же экран специалиста, но пушится поверх оболочки: сюда
+    // приходят из кризисного экрана и из ответа «выговориться»,
+    // откуда нужно вернуться назад, а не сменить вкладку.
+    GoRoute(path: '/specialist', builder: (_, _) => const HelpScreen()),
+
+    // «Путь» — календарь, знаки, опросники и инсайты одним экраном.
+    // Вход один: правый верхний угол главной.
+    GoRoute(path: '/path', builder: (_, _) => const PathScreen()),
+
+    // Старые адреса ведут туда, где их содержимое теперь живёт:
+    // ссылки на них раскиданы по экранам и внешним подсказкам.
+    GoRoute(path: '/sos', redirect: (_, _) => '/practices'),
+    GoRoute(path: '/calendar', redirect: (_, _) => '/path'),
+    GoRoute(path: '/badges', redirect: (_, _) => '/path'),
+
     GoRoute(path: '/sos/breathing', builder: (_, _) => const BreathingScreen()),
     GoRoute(path: '/sos/grounding', builder: (_, _) => const GroundingScreen()),
     GoRoute(path: '/sos/self-compassion', builder: (_, _) => const SelfCompassionScreen()),
@@ -82,8 +141,11 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Vent — голос по умолчанию, текст как fallback
-    GoRoute(path: '/vent', builder: (_, _) => const VoiceVentScreen()),
+    // Vent — вход из вкладки «Дневник» один, а способ выбирается уже
+    // внутри: голос уходит на сервер, текст остаётся на телефоне, и
+    // человек должен видеть эту разницу до нажатия.
+    GoRoute(path: '/vent', builder: (_, _) => const VentChoiceScreen()),
+    GoRoute(path: '/vent/voice', builder: (_, _) => const VoiceVentScreen()),
     GoRoute(path: '/vent/text', builder: (_, _) => const VentScreen()),
     GoRoute(
       path: '/vent/response',
@@ -119,7 +181,6 @@ final appRouter = GoRouter(
 
     // Tree, calendar, library
     GoRoute(path: '/tree', builder: (_, _) => const TreeScreen()),
-    GoRoute(path: '/calendar', builder: (_, _) => const CalendarScreen()),
     GoRoute(path: '/insights', builder: (_, _) => const InsightsScreen()),
     GoRoute(path: '/library', builder: (_, _) => const LibraryScreen()),
     GoRoute(
@@ -132,8 +193,8 @@ final appRouter = GoRouter(
       builder: (_, _) => const ResourcesScreen(),
     ),
 
-    // Diary
-    GoRoute(path: '/diary', builder: (_, _) => const DiaryListScreen()),
+    // Diary — список живёт во вкладке выше; формы записи пушатся
+    // поверх оболочки.
     GoRoute(
       path: '/diary/new/three-good',
       builder: (_, _) => const DiaryNewScreen(kind: DiaryKind.threeGood),

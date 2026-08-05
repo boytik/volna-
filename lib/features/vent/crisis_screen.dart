@@ -76,7 +76,7 @@ class CrisisScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             TextButton(
-              onPressed: () => context.push('/help'),
+              onPressed: () => context.push('/specialist'),
               child: const Text('Другие способы связи'),
             ),
           ],

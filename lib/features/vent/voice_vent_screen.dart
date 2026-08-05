@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/secrets.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/leaves_device_mark.dart';
 import '../../data/content/sos_techniques.dart';
 import '../../data/content/specialists.dart';
 import '../../data/content/vent_keywords.dart';
@@ -14,6 +15,7 @@ import '../../main.dart';
 import '../../services/audio_recorder_service.dart';
 import '../../services/azure_chat_service.dart';
 import '../../services/azure_transcribe_service.dart';
+import '../../services/on_device_transcribe_service.dart';
 import 'crisis_guard.dart';
 
 /// Голосовой «Выговорись».
@@ -21,7 +23,19 @@ import 'crisis_guard.dart';
 /// — hold-to-talk (нажать-говорить-отпустить), не continuous,
 /// — транскрипт показываем перед отправкой, даём отредактировать,
 /// — двухслойная crisis-detection: regex → если совпало, escalate без LLM.
-enum _Stage { consent, intro, recording, reviewing, processing, done, error }
+enum _Stage {
+  /// Спрашиваем у платформы, умеет ли она распознавать речь без сети.
+  /// Занимает миллисекунды, но от ответа зависит текст про приватность,
+  /// поэтому показывать что-либо до него нельзя.
+  probing,
+  consent,
+  intro,
+  recording,
+  reviewing,
+  processing,
+  done,
+  error,
+}
 
 class VoiceVentScreen extends StatefulWidget {
   const VoiceVentScreen({super.key});
@@ -33,10 +47,11 @@ class VoiceVentScreen extends StatefulWidget {
 class _VoiceVentScreenState extends State<VoiceVentScreen> {
   final _recorder = AudioRecorderService();
   final _transcribe = AzureTranscribeService();
+  final _onDevice = OnDeviceTranscribeService();
   final _chat = AzureChatService();
   final _transcriptCtl = TextEditingController();
 
-  late _Stage _stage;
+  _Stage _stage = _Stage.probing;
   double _amplitudeDb = -60;
   StreamSubscription<double>? _ampSub;
   Timer? _maxDurationTimer;
@@ -45,11 +60,31 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   VentTopic _topic = VentTopic.general;
   static const _maxRecSeconds = 90;
 
+  /// Умеет ли телефон распознавать речь без сети. От этого зависит и
+  /// путь записи, и то, что написано на экране про приватность.
+  bool _useOnDevice = false;
+
+  /// Черновик распознавания: показываем слова по мере того, как они
+  /// появляются. Человеку видно, что его слышат, и видно, что текст
+  /// собирается прямо здесь, а не где-то на сервере.
+  String _partial = '';
+
   @override
   void initState() {
     super.initState();
-    // Пока согласие на облачную расшифровку не дано, микрофон не показываем.
-    _stage = settingsStorage.cloudVoiceConsent ? _Stage.intro : _Stage.consent;
+    _probe();
+  }
+
+  Future<void> _probe() async {
+    final onDevice = await _onDevice.supportsOnDevice();
+    if (!mounted) return;
+    setState(() {
+      _useOnDevice = onDevice;
+      // Согласие нужно в обоих путях, но за разное. При локальном
+      // распознавании — за то, что на сервер уйдёт текст (и человек
+      // увидит его перед отправкой). При облачном — ещё и за аудио.
+      _stage = settingsStorage.cloudVoiceConsent ? _Stage.intro : _Stage.consent;
+    });
   }
 
   Future<void> _giveConsent() async {
@@ -64,12 +99,94 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
     _maxDurationTimer?.cancel();
     _transcriptCtl.dispose();
     _recorder.dispose();
+    _onDevice.cancel();
     super.dispose();
   }
 
   // ---------------------- Запись ----------------------
 
   Future<void> _startRecording() async {
+    if (_useOnDevice) return _startOnDevice();
+    return _startCloudRecording();
+  }
+
+  /// Локальный путь: файла записи не возникает вовсе, система отдаёт
+  /// сразу текст. Отправлять на расшифровку нечего.
+  Future<void> _startOnDevice() async {
+    final ready = await _onDevice.prepare(
+      onError: (msg) {
+        if (!mounted) return;
+        setState(() {
+          _stage = _Stage.error;
+          _errorMessage = 'Распознавание сорвалось: $msg. '
+              'Можно попробовать ещё раз или написать текстом.';
+        });
+      },
+    );
+    if (!mounted) return;
+    if (!ready) {
+      setState(() {
+        _stage = _Stage.error;
+        _errorMessage = 'Чтобы выслушать голосом, нужно разрешить микрофон '
+            'и распознавание речи в настройках телефона.';
+      });
+      return;
+    }
+
+    HapticFeedback.lightImpact();
+    setState(() {
+      _stage = _Stage.recording;
+      _partial = '';
+      _errorMessage = null;
+    });
+
+    // Страховка: система обычно присылает финальный результат сама, но
+    // если по таймауту она этого не сделает, экран останется в записи
+    // навсегда. Забираем то, что успело распознаться.
+    _maxDurationTimer?.cancel();
+    _maxDurationTimer = Timer(
+      OnDeviceTranscribeService.maxDuration + const Duration(seconds: 2),
+      () {
+        if (mounted && _stage == _Stage.recording) _stopOnDevice();
+      },
+    );
+
+    await _onDevice.listen(
+      onResult: (text, isFinal) {
+        if (!mounted) return;
+        setState(() => _partial = text);
+        if (isFinal) _finishOnDevice(text);
+      },
+    );
+  }
+
+  void _finishOnDevice(String text) {
+    if (_stage != _Stage.recording) return;
+    _maxDurationTimer?.cancel();
+    HapticFeedback.lightImpact();
+
+    if (text.trim().isEmpty) {
+      setState(() {
+        _stage = _Stage.error;
+        _errorMessage = 'Не разобрала ни слова. Попробуй ещё раз — '
+            'или напиши текстом.';
+      });
+      return;
+    }
+
+    _transcriptCtl.text = text;
+    setState(() => _stage = _Stage.reviewing);
+  }
+
+  Future<void> _stopOnDevice() async {
+    await _onDevice.stop();
+    if (!mounted) return;
+    // stop() не всегда приводит к финальному результату — добираем
+    // тем, что успело распознаться.
+    if (_stage == _Stage.recording) _finishOnDevice(_partial);
+  }
+
+  Future<void> _startCloudRecording() async {
     // Проверяем облако ДО записи. Раньше проверка стояла после stop(),
     // и человек сначала говорил 90 секунд, а потом узнавал, что зря.
     if (!cloudVoiceEnabled || azureOpenAiApiKey.isEmpty) {
@@ -115,6 +232,8 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   }
 
   Future<void> _stopRecording() async {
+    if (_useOnDevice) return _stopOnDevice();
+
     _maxDurationTimer?.cancel();
     await _ampSub?.cancel();
     HapticFeedback.lightImpact();
@@ -201,8 +320,8 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.go('/'),
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => context.pop(),
         ),
         title: Text(
           'Выговорись',
@@ -212,8 +331,8 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
           IconButton(
             tooltip: 'Написать текстом',
             icon: const Icon(Icons.keyboard_rounded),
-            color: AppColors.terracotta,
-            onPressed: () => context.go('/vent/text'),
+            color: AppColors.accentPress,
+            onPressed: () => context.pushReplacement('/vent/text'),
           ),
         ],
       ),
@@ -222,6 +341,10 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
           child: switch (_stage) {
+            // Пустая бумага на те миллисекунды, пока платформа отвечает.
+            // Спиннера нет намеренно: он читался бы как «что-то грузится
+            // из сети», а мы как раз про обратное.
+            _Stage.probing => const SizedBox.shrink(),
             _Stage.consent => _buildConsent(context),
             _Stage.intro => _buildIntro(context),
             _Stage.recording => _buildRecording(context),
@@ -238,8 +361,11 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   // ---------------------- Sub-views ----------------------
 
   /// Явное согласие перед первым использованием голоса.
-  /// Единственное место в приложении, откуда данные уходят с устройства,
-  /// поэтому спрашиваем прямо и даём равноценную альтернативу — текст.
+  ///
+  /// Текст зависит от того, что на самом деле уйдёт с телефона. Если
+  /// система распознаёт речь сама — аудио не покидает устройство вовсе,
+  /// и говорить про «отправим запись в облако» было бы враньём в свою
+  /// невыгоду. Если не умеет — говорим ровно как есть.
   Widget _buildConsent(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -248,17 +374,39 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         const SizedBox(height: 8),
         Text('Прежде чем начать', style: theme.textTheme.displayLarge),
         const SizedBox(height: 12),
-        Text(
-          'Чтобы разобрать твою запись, её нужно отправить на расшифровку '
-          'в облако — сервис Azure OpenAI от Microsoft. Туда уходит аудио и '
-          'получившийся текст.',
-          style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
-        ),
+        if (_useOnDevice) ...[
+          Text(
+            'Твой голос превращается в текст прямо на телефоне. Запись '
+            'никуда не отправляется и нигде не сохраняется.',
+            style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Чтобы я могла ответить, на сервер уходит только получившийся '
+            'текст — и ты увидишь его перед отправкой, сможешь поправить '
+            'или стереть лишнее.',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ] else ...[
+          Text(
+            'Этот телефон не умеет распознавать речь без интернета, '
+            'поэтому запись придётся отправить на расшифровку в облако — '
+            'сервис Azure OpenAI от Microsoft.',
+            style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Если включить русскую диктовку в настройках телефона, '
+            '«Волна» станет распознавать речь на устройстве, и отправлять '
+            'запись будет не нужно.',
+            style: theme.textTheme.bodyMedium,
+          ),
+        ],
         const SizedBox(height: 12),
         Text(
           'Ни имени, ни телефона, ни аккаунта приложение не собирает — '
-          'связать запись с тобой нельзя. Microsoft может хранить запросы '
-          'до 30 дней для защиты от злоупотреблений.',
+          'связать сказанное с тобой нельзя. Microsoft может хранить '
+          'запросы до 30 дней для защиты от злоупотреблений.',
           style: theme.textTheme.bodyMedium,
         ),
         const SizedBox(height: 12),
@@ -270,11 +418,13 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         const SizedBox(height: 24),
         FilledButton(
           onPressed: _giveConsent,
-          child: const Text('Согласна, разобрать голос'),
+          child: Text(
+            _useOnDevice ? 'Хорошо, слушай' : 'Согласна, разобрать голос',
+          ),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
-          onPressed: () => context.go('/vent/text'),
+          onPressed: () => context.pushReplacement('/vent/text'),
           child: const Text('Лучше напишу текстом'),
         ),
         const SizedBox(height: 8),
@@ -298,10 +448,23 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         Text('Я выслушаю', style: theme.textTheme.displayLarge),
         const SizedBox(height: 8),
         Text(
-          'Зажми кнопку и говори. До 90 секунд. '
-          'Запись уходит на расшифровку в облако и с телефона удаляется.',
+          _useOnDevice
+              ? 'Зажми кнопку и говори. До 90 секунд. Речь превращается '
+                  'в текст прямо здесь, на телефоне.'
+              : 'Зажми кнопку и говори. До 90 секунд. '
+                  'Запись уходит на расшифровку в облако и с телефона '
+                  'удаляется.',
           style: theme.textTheme.bodyMedium,
         ),
+        const SizedBox(height: 12),
+        // Знак стоит только там, где аудио действительно покидает
+        // телефон. При локальном распознавании его нет — иначе он
+        // перестанет что-либо значить.
+        if (!_useOnDevice)
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: LeavesDeviceMark(),
+          ),
         const Spacer(),
         Center(
           child: _MicButton(
@@ -341,7 +504,22 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
           style: theme.textTheme.bodyMedium,
         ),
         const Spacer(),
-        _AmplitudeBars(amplitudeDb: _amplitudeDb),
+        // При локальном распознавании показываем сам текст по мере
+        // появления: видно, что слова собираются здесь, а не улетают
+        // куда-то. Полоски громкости для этого не нужны.
+        if (_useOnDevice)
+          Expanded(
+            flex: 3,
+            child: SingleChildScrollView(
+              reverse: true,
+              child: Text(
+                _partial.isEmpty ? '…' : _partial,
+                style: theme.textTheme.bodyLarge,
+              ),
+            ),
+          )
+        else
+          _AmplitudeBars(amplitudeDb: _amplitudeDb),
         const SizedBox(height: 30),
         FilledButton.icon(
           onPressed: _stopRecording,
@@ -468,7 +646,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         ),
         const SizedBox(height: 8),
         TextButton(
-          onPressed: () => context.go('/vent/text'),
+          onPressed: () => context.pushReplacement('/vent/text'),
           child: const Text('Написать текстом'),
         ),
       ],
@@ -625,7 +803,7 @@ class _ResponseView extends StatelessWidget {
           color: AppColors.sage.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(AppRadius.sm),
           child: InkWell(
-            onTap: () => context.push('/help'),
+            onTap: () => context.push('/specialist'),
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: Padding(
               padding: const EdgeInsets.all(14),

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
-import '../../core/widgets/sos_button.dart';
 import '../../data/content/quests.dart';
 import '../../data/content/survival.dart';
 import '../../data/local/toolbox_storage.dart';
@@ -14,15 +13,13 @@ import '../tree/tree_view.dart';
 
 /// Главный экран как плакат, а не как дашборд.
 ///
-/// Первый экран несёт ровно четыре вещи: метку времени суток,
-/// крупную фразу, две равноправные строки выбора и полосу SOS.
-/// Всё остальное — древо, дневник, конверты, инструменты — уходит
-/// ниже сгиба и читается как следующие страницы той же бумаги.
+/// Первый экран несёт метку времени суток, крупную фразу, шаг дня
+/// с двумя кнопками и древо. Всё это должно помещаться без скролла:
+/// ритм в 96pt между блоками выглядел красиво в макете, но на живом
+/// телефоне выталкивал древо за нижний бар.
 ///
-/// Раньше здесь стояли семь элементов одной формы (скруглённый
-/// прямоугольник + круглая иконка + заголовок + подзаголовок +
-/// шеврон). Приоритета не было: в кризисе SOS приходилось искать
-/// чтением.
+/// Разделы и практики живут в нижнем баре, конверты и подсказки —
+/// ниже древа.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -76,44 +73,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final survival = survivalFor(slot);
 
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: SafeArea(
-              bottom: false,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    HomeMasthead(isMorning: isMorning),
-                    _Opening(isDone: isDone, isMorning: isMorning),
-                    const SizedBox(height: AppSpacing.huge),
-                    _Choice(
-                      isDone: isDone,
-                      survivalMode: survivalMode,
-                      questTitle: quest.title,
-                      questDuration: quest.duration,
-                      survivalTitle: survival.title,
-                      onFull: () => _go(
-                        isMorning ? '/quest/morning' : '/quest/evening',
-                      ),
-                      onShort: () => _go(
-                        isMorning ? '/survival/morning' : '/survival/evening',
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.huge),
-                    _BelowFold(onGo: _go),
-                    const SizedBox(height: AppSpacing.xl),
-                  ],
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HomeMasthead(isMorning: isMorning),
+              _Opening(isDone: isDone, isMorning: isMorning),
+              const SizedBox(height: AppSpacing.xxl),
+              _Choice(
+                isDone: isDone,
+                survivalMode: survivalMode,
+                questTitle: quest.title,
+                questDuration: quest.duration,
+                survivalTitle: survival.title,
+                onFull: () => _go(
+                  isMorning ? '/quest/morning' : '/quest/evening',
+                ),
+                onShort: () => _go(
+                  isMorning ? '/survival/morning' : '/survival/evening',
                 ),
               ),
-            ),
+              const SizedBox(height: AppSpacing.xxl),
+              _BelowFold(onGo: _go),
+              const SizedBox(height: AppSpacing.xl),
+            ],
           ),
-          // Полоса вровень с краем: без отступов и без радиуса.
-          // SafeArea здесь намеренно нет — SosButton сам забирает
-          // безопасную зону внутрь, иначе под ним остаётся щель.
-          SosButton(onTap: () => _go('/sos')),
-        ],
+        ),
       ),
     );
   }
@@ -133,13 +120,18 @@ class HomeMasthead extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.axis,
-        AppSpacing.xxl,
+        AppSpacing.lg,
         AppSpacing.md,
         0,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Пять безымянных иконок переехали в нижний бар. Осталась
+          // одна — вход в «Путь», где слиты календарь, знаки, опросники
+          // и «что я заметила». Заодно исчез повод для Flexible: в
+          // строке два элемента вместо шести, и уронить её в overflow
+          // на узком экране больше нечем.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -148,41 +140,10 @@ class HomeMasthead extends StatelessWidget {
                 (isMorning ? 'Утро' : 'Вечер').toUpperCase(),
                 style: theme.textTheme.labelSmall,
               ),
-              // Пять иконок в фиксированном Row переполняли строку на
-              // узких экранах (iPhone SE) — отдаём им остаток ширины.
-              // Spacer здесь ставить нельзя: он конкурирует с Flexible
-              // за свободное место и снова роняет строку в overflow.
-              Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    _NavIcon(
-                      icon: Icons.workspace_premium_outlined,
-                      tooltip: 'Знаки присутствия',
-                      route: '/badges',
-                    ),
-                    _NavIcon(
-                      icon: Icons.support_agent_outlined,
-                      tooltip: 'Связь со специалистом',
-                      route: '/help',
-                    ),
-                    _NavIcon(
-                      icon: Icons.edit_note_outlined,
-                      tooltip: 'Дневник',
-                      route: '/diary',
-                    ),
-                    _NavIcon(
-                      icon: Icons.menu_book_outlined,
-                      tooltip: 'Библиотека',
-                      route: '/library',
-                    ),
-                    _NavIcon(
-                      icon: Icons.tune_outlined,
-                      tooltip: 'Настройки',
-                      route: '/settings',
-                    ),
-                  ],
-                ),
+              const _NavIcon(
+                icon: Icons.calendar_month_outlined,
+                tooltip: 'Твой путь',
+                route: '/path',
               ),
             ],
           ),
@@ -246,7 +207,7 @@ class _Opening extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.axis,
-        AppSpacing.xxxl,
+        AppSpacing.xl,
         AppSpacing.marginRight,
         0,
       ),
@@ -255,8 +216,8 @@ class _Opening extends StatelessWidget {
   }
 }
 
-/// Две строки бланка. Короткая версия набрана тем же кеглем и весом,
-/// что и полная: это равноправный выбор, а не «запасная кнопка».
+/// Шаг дня: название практики и две кнопки. Короткая версия — кнопка
+/// того же размера и кегля, а не серая ссылка внизу.
 class _Choice extends StatelessWidget {
   const _Choice({
     required this.isDone,
@@ -290,67 +251,40 @@ class _Choice extends StatelessWidget {
       );
     }
 
+    // Раньше выбор был набран строками бланка с волосяной линейкой.
+    // Равноправие полной и короткой версии это давало, а вот того,
+    // что сюда можно нажать, — нет: строка с подчёркиванием читается
+    // заголовком. Теперь это две настоящие кнопки одной высоты.
+    final title = survivalMode ? survivalTitle : questTitle;
+    final duration = survivalMode ? '40 секунд' : questDuration;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.axis),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!survivalMode)
-            _FormLine(
-              text: '$questTitle · $questDuration',
-              color: AppColors.accentPress,
-              onTap: onFull,
-            ),
-          _FormLine(
-            text: survivalMode
-                ? '$survivalTitle · 40 секунд'
-                : 'или короткая версия — 40 секунд',
-            color: survivalMode
-                ? AppColors.accentPress
-                : theme.textTheme.bodyLarge?.color,
-            onTap: onShort,
+          Text(
+            (survivalMode ? 'Режим выживания' : 'Шаг дня').toUpperCase(),
+            style: theme.textTheme.labelSmall,
           ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(title, style: theme.textTheme.headlineMedium),
+          const SizedBox(height: AppSpacing.xs),
+          Text(duration, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: AppSpacing.md),
+          if (!survivalMode) ...[
+            FilledButton(onPressed: onFull, child: const Text('Начать')),
+            const SizedBox(height: AppSpacing.smd),
+            // Короткая версия — кнопка того же размера и кегля, а не
+            // серая ссылка внизу: отказ от полной практики должен
+            // весить столько же, сколько согласие.
+            OutlinedButton(
+              onPressed: onShort,
+              child: const Text('Короткая версия — 40 секунд'),
+            ),
+          ] else
+            FilledButton(onPressed: onShort, child: const Text('Начать')),
         ],
-      ),
-    );
-  }
-}
-
-/// Строка бланка: текст и волосяная линейка до правого края.
-class _FormLine extends StatelessWidget {
-  const _FormLine({
-    required this.text,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String text;
-  final Color? color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.only(
-          top: AppSpacing.md,
-          bottom: AppSpacing.smd,
-        ),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: theme.colorScheme.outline,
-              width: AppStroke.hairline,
-            ),
-          ),
-        ),
-        child: Text(
-          text,
-          style: theme.textTheme.labelLarge?.copyWith(color: color),
-        ),
       ),
     );
   }
@@ -370,13 +304,9 @@ class _BelowFold extends StatelessWidget {
     final rings = questStorage.weeksLived;
     final lights = questStorage.recentActivityAges();
 
+    // «Выговориться» отсюда ушло: теперь это вкладка в нижнем баре,
+    // и дублировать её строкой значит показывать одно и то же дважды.
     final rows = <Widget>[
-      _PageRow(
-        title: 'Просто выговориться',
-        note: 'Я выслушаю и подберу одну вещь, которая поможет сейчас',
-        leavesDevice: true,
-        onTap: () => onGo('/vent'),
-      ),
       if (readyEnvelopes.isNotEmpty)
         _PageRow(
           title: readyEnvelopes.length == 1
@@ -401,12 +331,12 @@ class _BelowFold extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...rows,
               TreeBlock(
                 rings: rings,
                 lights: lights,
                 onTap: () => onGo('/tree'),
               ),
+              ...rows,
             ],
           ),
         ),
@@ -428,16 +358,11 @@ class _PageRow extends StatelessWidget {
     required this.title,
     required this.note,
     required this.onTap,
-    this.leavesDevice = false,
   });
 
   final String title;
   final String note;
   final VoidCallback onTap;
-
-  /// Единственный внешний вызов в приложении — распознавание речи и
-  /// ответ в «выговориться». Знак стоит там и только там.
-  final bool leavesDevice;
 
   @override
   Widget build(BuildContext context) {
@@ -458,50 +383,10 @@ class _PageRow extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Flexible(
-                  child: Text(title, style: theme.textTheme.titleLarge),
-                ),
-                if (leavesDevice) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  const LeavesDeviceMark(),
-                ],
-              ],
-            ),
+            Text(title, style: theme.textTheme.titleLarge),
             const SizedBox(height: AppSpacing.xs),
             Text(note, style: theme.textTheme.bodyMedium),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Знак «уходит с телефона». Дневник, чек-ины и записи его не имеют —
-/// и это видно глазом, а не только написано в политике.
-class LeavesDeviceMark extends StatelessWidget {
-  const LeavesDeviceMark({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: 'Этот раздел отправляет запись на сервер распознавания',
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.smR,
-          border: Border.all(
-            color: AppColors.accent,
-            width: AppStroke.hairline,
-          ),
-        ),
-        child: Text(
-          'УХОДИТ НА СЕРВЕР',
-          style: Theme.of(context)
-              .textTheme
-              .labelSmall
-              ?.copyWith(color: AppColors.accentPress),
         ),
       ),
     );

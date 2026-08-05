@@ -490,7 +490,7 @@ class _ResultScreen extends StatelessWidget {
           title: 'Найти онлайн-психолога',
           subtitle: 'Каталоги проверенных сервисов',
           onTap: () {
-            context.push('/help');
+            context.push('/specialist');
           },
         ),
       ];

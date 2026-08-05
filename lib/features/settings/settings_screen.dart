@@ -98,18 +98,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Корень вкладки: кнопки «назад» здесь нет, уходят другой вкладкой.
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text(''),
-      ),
       body: SafeArea(
-        top: false,
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.axis,
+            AppSpacing.xxl,
+            AppSpacing.axis,
+            AppSpacing.xl,
+          ),
           children: [
             Text('Настройки', style: theme.textTheme.displayLarge),
             const SizedBox(height: 28),
@@ -195,36 +194,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Включить режим выживания'),
               ),
             ),
-            const SizedBox(height: 24),
-            _Section(
-              title: 'Дополнительно',
-              subtitle: 'Что я заметила, опросники, календарь.',
-              child: Column(
-                children: [
-                  _LinkRow(
-                    icon: Icons.insights_rounded,
-                    accent: AppColors.terracotta,
-                    title: 'Что я заметила',
-                    subtitle: 'Корреляции между шагами и настроением',
-                    onTap: () => context.push('/insights'),
-                  ),
-                  _LinkRow(
-                    icon: Icons.assignment_rounded,
-                    accent: AppColors.saffron,
-                    title: 'Опросники',
-                    subtitle: 'PSS, PBI, CSI — раз в 2 недели или когда захочется',
-                    onTap: () => context.push('/questionnaire'),
-                  ),
-                  _LinkRow(
-                    icon: Icons.calendar_month_rounded,
-                    accent: AppColors.sageDeep,
-                    title: 'Календарь',
-                    subtitle: 'Месяц настроений и шагов',
-                    onTap: () => context.push('/calendar'),
-                  ),
-                ],
-              ),
-            ),
+            // Секции «Дополнительно» здесь больше нет. Календарь,
+            // инсайты и опросники переехали в «Ещё»: это рефлексия и
+            // самооценка, а не конфигурация приложения. Под шестерёнкой
+            // их никто не искал.
             const SizedBox(height: 24),
             _Section(
               title: 'Данные',
