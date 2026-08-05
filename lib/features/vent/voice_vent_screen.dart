@@ -214,7 +214,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
             tooltip: 'Написать текстом',
             icon: const Icon(Icons.keyboard_rounded),
             color: AppColors.accentPress,
-            onPressed: () => context.push('/vent/text'),
+            onPressed: () => context.pushReplacement('/vent/text'),
           ),
         ],
       ),
@@ -275,7 +275,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         ),
         const SizedBox(height: 8),
         OutlinedButton(
-          onPressed: () => context.go('/vent/text'),
+          onPressed: () => context.pushReplacement('/vent/text'),
           child: const Text('Лучше напишу текстом'),
         ),
         const SizedBox(height: 8),
@@ -476,7 +476,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         ),
         const SizedBox(height: 8),
         TextButton(
-          onPressed: () => context.go('/vent/text'),
+          onPressed: () => context.pushReplacement('/vent/text'),
           child: const Text('Написать текстом'),
         ),
       ],

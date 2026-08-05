@@ -31,6 +31,7 @@ import '../features/sos/self_compassion_screen.dart';
 import '../features/sos/technique_screen.dart';
 import '../features/tree/tree_screen.dart';
 import '../features/vent/crisis_screen.dart';
+import '../features/vent/vent_choice_screen.dart';
 import '../features/vent/vent_response_screen.dart';
 import '../features/vent/vent_screen.dart';
 import '../features/vent/voice_vent_screen.dart';
@@ -130,10 +131,11 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Vent — вход из вкладки «Дневник»: и запись, и голос это способы
-    // выложить, что внутри. Пушится поверх оболочки, потому что запись
-    // и расшифровка — сфокусированное состояние.
-    GoRoute(path: '/vent', builder: (_, _) => const VoiceVentScreen()),
+    // Vent — вход из вкладки «Дневник» один, а способ выбирается уже
+    // внутри: голос уходит на сервер, текст остаётся на телефоне, и
+    // человек должен видеть эту разницу до нажатия.
+    GoRoute(path: '/vent', builder: (_, _) => const VentChoiceScreen()),
+    GoRoute(path: '/vent/voice', builder: (_, _) => const VoiceVentScreen()),
     GoRoute(path: '/vent/text', builder: (_, _) => const VentScreen()),
     GoRoute(
       path: '/vent/response',

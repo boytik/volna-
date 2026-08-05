@@ -147,10 +147,24 @@ void main() {
       }
     });
 
-    test('дневник держит оба входа в «выговориться»', () {
+    test('дневник держит один вход в «выговориться»', () {
       final s = read('lib/features/diary/diary_list_screen.dart');
       expect(s.contains("'/vent'"), isTrue);
+      expect(
+        s.contains("'/vent/text'"),
+        isFalse,
+        reason: 'способ выбирается внутри, а не в списке дневника',
+      );
+    });
+
+    test('экран выбора предлагает оба способа и различает их по приватности',
+        () {
+      final s = read('lib/features/vent/vent_choice_screen.dart');
+      expect(s.contains("'/vent/voice'"), isTrue);
       expect(s.contains("'/vent/text'"), isTrue);
+      // Знак «уходит на сервер» ровно один: текст никуда не уходит,
+      // и уравнивать их значило бы врать в обе стороны.
+      expect(RegExp(r'leavesDevice: true').allMatches(s).length, 1);
     });
 
     test('старые адреса ведут туда, где содержимое теперь живёт', () {

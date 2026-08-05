@@ -56,7 +56,8 @@ class _VentScreenState extends State<VentScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.go('/'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/'),
         ),
       ),
       body: SafeArea(

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
-import '../../core/widgets/leaves_device_mark.dart';
 import '../../data/local/diary_storage.dart';
 import '../../main.dart';
 
@@ -60,21 +59,13 @@ class _DiaryListScreenState extends State<DiaryListScreen>
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // «Выговориться» переехало сюда с отдельной вкладки:
-            // писать и говорить — два способа выложить одно и то же,
-            // и держать их в разных концах бара было странно.
-            Text('СКАЗАТЬ ВСЛУХ', style: theme.textTheme.labelSmall),
-            const SizedBox(height: AppSpacing.sm),
+            // «Выговориться» — одна строка. Выбор между голосом и
+            // текстом делается внутри: решать способ ещё до входа
+            // человеку в тяжёлом состоянии незачем.
             _VentRow(
-              title: 'Выговориться голосом',
-              note: 'Зажми и говори — я выслушаю и отвечу',
+              title: 'Выговориться',
+              note: 'Голосом или текстом — я выслушаю и отвечу',
               route: '/vent',
-              leavesDevice: true,
-            ),
-            _VentRow(
-              title: 'Написать текстом',
-              note: 'То же самое, только буквами',
-              route: '/vent/text',
             ),
             const SizedBox(height: AppSpacing.xxl),
             if (readyEnvelopes.isNotEmpty) ...[
@@ -365,21 +356,18 @@ class _EntryCard extends StatelessWidget {
 }
 
 /// Вход в «выговориться» из дневника. Знак «уходит на сервер» стоит
-/// только на голосовом варианте: текстовый разбирается там же, но
-/// именно аудио покидает телефон первым, и это должно быть видно
-/// до нажатия, а не после.
+/// не здесь, а на экране выбора: он относится к голосу, а не ко всему
+/// разделу — текст никуда не отправляется.
 class _VentRow extends StatelessWidget {
   const _VentRow({
     required this.title,
     required this.note,
     required this.route,
-    this.leavesDevice = false,
   });
 
   final String title;
   final String note;
   final String route;
-  final bool leavesDevice;
 
   @override
   Widget build(BuildContext context) {
@@ -400,17 +388,7 @@ class _VentRow extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Flexible(
-                  child: Text(title, style: theme.textTheme.titleLarge),
-                ),
-                if (leavesDevice) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  const LeavesDeviceMark(),
-                ],
-              ],
-            ),
+            Text(title, style: theme.textTheme.titleLarge),
             const SizedBox(height: AppSpacing.xs),
             Text(note, style: theme.textTheme.bodyMedium),
           ],
