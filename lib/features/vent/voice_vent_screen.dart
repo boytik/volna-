@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/secrets.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/leaves_device_mark.dart';
 import '../../data/content/sos_techniques.dart';
 import '../../data/content/specialists.dart';
 import '../../data/content/vent_keywords.dart';
@@ -199,11 +200,10 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Кнопки закрытия здесь нет: это корень вкладки, а не экран,
+      // на который зашли. Уйти отсюда можно любой другой вкладкой.
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => context.go('/'),
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'Выговорись',
           style: Theme.of(context).textTheme.titleLarge,
@@ -212,8 +212,8 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
           IconButton(
             tooltip: 'Написать текстом',
             icon: const Icon(Icons.keyboard_rounded),
-            color: AppColors.terracotta,
-            onPressed: () => context.go('/vent/text'),
+            color: AppColors.accentPress,
+            onPressed: () => context.push('/vent/text'),
           ),
         ],
       ),
@@ -301,6 +301,13 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
           'Зажми кнопку и говори. До 90 секунд. '
           'Запись уходит на расшифровку в облако и с телефона удаляется.',
           style: theme.textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 12),
+        // Знак переехал сюда с главной: он должен стоять там, где
+        // данные действительно покидают телефон, а не в списке разделов.
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: LeavesDeviceMark(),
         ),
         const Spacer(),
         Center(

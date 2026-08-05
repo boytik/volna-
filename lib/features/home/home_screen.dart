@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
-import '../../core/widgets/sos_button.dart';
 import '../../data/content/quests.dart';
 import '../../data/content/survival.dart';
 import '../../data/local/toolbox_storage.dart';
@@ -14,10 +13,11 @@ import '../tree/tree_view.dart';
 
 /// Главный экран как плакат, а не как дашборд.
 ///
-/// Первый экран несёт ровно четыре вещи: метку времени суток,
-/// крупную фразу, две равноправные строки выбора и полосу SOS.
-/// Всё остальное — древо, дневник, конверты, инструменты — уходит
-/// ниже сгиба и читается как следующие страницы той же бумаги.
+/// Первый экран несёт ровно три вещи: метку времени суток, крупную
+/// фразу и две равноправные строки выбора. Всё остальное — древо,
+/// конверты, инструменты — уходит ниже сгиба и читается как следующие
+/// страницы той же бумаги. Разделы и выход в кризисные техники живут
+/// в нижнем баре.
 ///
 /// Раньше здесь стояли семь элементов одной формы (скруглённый
 /// прямоугольник + круглая иконка + заголовок + подзаголовок +
@@ -75,45 +75,38 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final quest = QuestPicker.pickToday(slot);
     final survival = survivalFor(slot);
 
+    // Кнопка «Плохо» переехала в нижний бар: раньше она жила только
+    // здесь, и человеку из дневника приходилось сначала выбираться
+    // на главную.
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: SafeArea(
-              bottom: false,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    HomeMasthead(isMorning: isMorning),
-                    _Opening(isDone: isDone, isMorning: isMorning),
-                    const SizedBox(height: AppSpacing.huge),
-                    _Choice(
-                      isDone: isDone,
-                      survivalMode: survivalMode,
-                      questTitle: quest.title,
-                      questDuration: quest.duration,
-                      survivalTitle: survival.title,
-                      onFull: () => _go(
-                        isMorning ? '/quest/morning' : '/quest/evening',
-                      ),
-                      onShort: () => _go(
-                        isMorning ? '/survival/morning' : '/survival/evening',
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.huge),
-                    _BelowFold(onGo: _go),
-                    const SizedBox(height: AppSpacing.xl),
-                  ],
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HomeMasthead(isMorning: isMorning),
+              _Opening(isDone: isDone, isMorning: isMorning),
+              const SizedBox(height: AppSpacing.huge),
+              _Choice(
+                isDone: isDone,
+                survivalMode: survivalMode,
+                questTitle: quest.title,
+                questDuration: quest.duration,
+                survivalTitle: survival.title,
+                onFull: () => _go(
+                  isMorning ? '/quest/morning' : '/quest/evening',
+                ),
+                onShort: () => _go(
+                  isMorning ? '/survival/morning' : '/survival/evening',
                 ),
               ),
-            ),
+              const SizedBox(height: AppSpacing.huge),
+              _BelowFold(onGo: _go),
+              const SizedBox(height: AppSpacing.xl),
+            ],
           ),
-          // Полоса вровень с краем: без отступов и без радиуса.
-          // SafeArea здесь намеренно нет — SosButton сам забирает
-          // безопасную зону внутрь, иначе под ним остаётся щель.
-          SosButton(onTap: () => _go('/sos')),
-        ],
+        ),
       ),
     );
   }
@@ -140,6 +133,10 @@ class HomeMasthead extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Пять безымянных иконок переехали в нижний бар и в «Ещё».
+          // Осталась одна — знаки присутствия. Заодно исчез повод для
+          // Flexible: в строке два элемента вместо шести, и уронить её
+          // в overflow на узком экране больше нечем.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -148,41 +145,10 @@ class HomeMasthead extends StatelessWidget {
                 (isMorning ? 'Утро' : 'Вечер').toUpperCase(),
                 style: theme.textTheme.labelSmall,
               ),
-              // Пять иконок в фиксированном Row переполняли строку на
-              // узких экранах (iPhone SE) — отдаём им остаток ширины.
-              // Spacer здесь ставить нельзя: он конкурирует с Flexible
-              // за свободное место и снова роняет строку в overflow.
-              Flexible(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    _NavIcon(
-                      icon: Icons.workspace_premium_outlined,
-                      tooltip: 'Знаки присутствия',
-                      route: '/badges',
-                    ),
-                    _NavIcon(
-                      icon: Icons.support_agent_outlined,
-                      tooltip: 'Связь со специалистом',
-                      route: '/help',
-                    ),
-                    _NavIcon(
-                      icon: Icons.edit_note_outlined,
-                      tooltip: 'Дневник',
-                      route: '/diary',
-                    ),
-                    _NavIcon(
-                      icon: Icons.menu_book_outlined,
-                      tooltip: 'Библиотека',
-                      route: '/library',
-                    ),
-                    _NavIcon(
-                      icon: Icons.tune_outlined,
-                      tooltip: 'Настройки',
-                      route: '/settings',
-                    ),
-                  ],
-                ),
+              const _NavIcon(
+                icon: Icons.workspace_premium_outlined,
+                tooltip: 'Знаки присутствия',
+                route: '/badges',
               ),
             ],
           ),
@@ -370,13 +336,9 @@ class _BelowFold extends StatelessWidget {
     final rings = questStorage.weeksLived;
     final lights = questStorage.recentActivityAges();
 
+    // «Выговориться» отсюда ушло: теперь это вкладка в нижнем баре,
+    // и дублировать её строкой значит показывать одно и то же дважды.
     final rows = <Widget>[
-      _PageRow(
-        title: 'Просто выговориться',
-        note: 'Я выслушаю и подберу одну вещь, которая поможет сейчас',
-        leavesDevice: true,
-        onTap: () => onGo('/vent'),
-      ),
       if (readyEnvelopes.isNotEmpty)
         _PageRow(
           title: readyEnvelopes.length == 1
@@ -428,16 +390,11 @@ class _PageRow extends StatelessWidget {
     required this.title,
     required this.note,
     required this.onTap,
-    this.leavesDevice = false,
   });
 
   final String title;
   final String note;
   final VoidCallback onTap;
-
-  /// Единственный внешний вызов в приложении — распознавание речи и
-  /// ответ в «выговориться». Знак стоит там и только там.
-  final bool leavesDevice;
 
   @override
   Widget build(BuildContext context) {
@@ -458,50 +415,10 @@ class _PageRow extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Flexible(
-                  child: Text(title, style: theme.textTheme.titleLarge),
-                ),
-                if (leavesDevice) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  const LeavesDeviceMark(),
-                ],
-              ],
-            ),
+            Text(title, style: theme.textTheme.titleLarge),
             const SizedBox(height: AppSpacing.xs),
             Text(note, style: theme.textTheme.bodyMedium),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Знак «уходит с телефона». Дневник, чек-ины и записи его не имеют —
-/// и это видно глазом, а не только написано в политике.
-class LeavesDeviceMark extends StatelessWidget {
-  const LeavesDeviceMark({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: 'Этот раздел отправляет запись на сервер распознавания',
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.smR,
-          border: Border.all(
-            color: AppColors.accent,
-            width: AppStroke.hairline,
-          ),
-        ),
-        child: Text(
-          'УХОДИТ НА СЕРВЕР',
-          style: Theme.of(context)
-              .textTheme
-              .labelSmall
-              ?.copyWith(color: AppColors.accentPress),
         ),
       ),
     );

@@ -195,36 +195,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Включить режим выживания'),
               ),
             ),
-            const SizedBox(height: 24),
-            _Section(
-              title: 'Дополнительно',
-              subtitle: 'Что я заметила, опросники, календарь.',
-              child: Column(
-                children: [
-                  _LinkRow(
-                    icon: Icons.insights_rounded,
-                    accent: AppColors.terracotta,
-                    title: 'Что я заметила',
-                    subtitle: 'Корреляции между шагами и настроением',
-                    onTap: () => context.push('/insights'),
-                  ),
-                  _LinkRow(
-                    icon: Icons.assignment_rounded,
-                    accent: AppColors.saffron,
-                    title: 'Опросники',
-                    subtitle: 'PSS, PBI, CSI — раз в 2 недели или когда захочется',
-                    onTap: () => context.push('/questionnaire'),
-                  ),
-                  _LinkRow(
-                    icon: Icons.calendar_month_rounded,
-                    accent: AppColors.sageDeep,
-                    title: 'Календарь',
-                    subtitle: 'Месяц настроений и шагов',
-                    onTap: () => context.push('/calendar'),
-                  ),
-                ],
-              ),
-            ),
+            // Секции «Дополнительно» здесь больше нет. Календарь,
+            // инсайты и опросники переехали в «Ещё»: это рефлексия и
+            // самооценка, а не конфигурация приложения. Под шестерёнкой
+            // их никто не искал.
             const SizedBox(height: 24),
             _Section(
               title: 'Данные',

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/content/crisis_keywords.dart';
@@ -17,6 +18,7 @@ import '../features/insights/insights_screen.dart';
 import '../features/library/library_screen.dart';
 import '../features/library/phrases_screen.dart';
 import '../features/library/resources_screen.dart';
+import '../features/more/more_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/quest/quest_screen.dart';
 import '../features/quest/survival_screen.dart';
@@ -35,8 +37,12 @@ import '../features/vent/vent_response_screen.dart';
 import '../features/vent/vent_screen.dart';
 import '../features/vent/voice_vent_screen.dart';
 import '../main.dart';
+import 'shell_scaffold.dart';
+
+final _rootKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
+  navigatorKey: _rootKey,
   initialLocation: '/',
   redirect: (context, state) {
     final isOnboarding = state.matchedLocation == '/onboarding';
@@ -52,8 +58,35 @@ final appRouter = GoRouter(
     return null;
   },
   routes: [
+    // Онбординг и экран про данные — вне оболочки: до согласия
+    // навигации по разделам быть не должно.
     GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
-    GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+
+    // Оболочка с нижним баром. Внутри — только корни вкладок; каждая
+    // ветка держит свой стек, поэтому переключение вкладок не теряет
+    // состояние (набранный текст в дневнике переживает уход и возврат).
+    StatefulShellRoute.indexedStack(
+      builder: (_, _, shell) => ShellScaffold(navigationShell: shell),
+      branches: [
+        StatefulShellBranch(
+          routes: [GoRoute(path: '/', builder: (_, _) => const HomeScreen())],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/vent', builder: (_, _) => const VoiceVentScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/diary', builder: (_, _) => const DiaryListScreen()),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [GoRoute(path: '/more', builder: (_, _) => const MoreScreen())],
+        ),
+      ],
+    ),
+
     GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
     GoRoute(path: '/privacy', builder: (_, _) => const PrivacyScreen()),
     GoRoute(path: '/badges', builder: (_, _) => const BadgesScreen()),
@@ -82,8 +115,8 @@ final appRouter = GoRouter(
       },
     ),
 
-    // Vent — голос по умолчанию, текст как fallback
-    GoRoute(path: '/vent', builder: (_, _) => const VoiceVentScreen()),
+    // Vent — корень («голос») живёт во вкладке выше; текст и ответ
+    // пушатся поверх оболочки: это сфокусированные состояния.
     GoRoute(path: '/vent/text', builder: (_, _) => const VentScreen()),
     GoRoute(
       path: '/vent/response',
@@ -132,8 +165,8 @@ final appRouter = GoRouter(
       builder: (_, _) => const ResourcesScreen(),
     ),
 
-    // Diary
-    GoRoute(path: '/diary', builder: (_, _) => const DiaryListScreen()),
+    // Diary — список живёт во вкладке выше; формы записи пушатся
+    // поверх оболочки.
     GoRoute(
       path: '/diary/new/three-good',
       builder: (_, _) => const DiaryNewScreen(kind: DiaryKind.threeGood),
