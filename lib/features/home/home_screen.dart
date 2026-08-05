@@ -13,16 +13,13 @@ import '../tree/tree_view.dart';
 
 /// Главный экран как плакат, а не как дашборд.
 ///
-/// Первый экран несёт ровно три вещи: метку времени суток, крупную
-/// фразу и две равноправные строки выбора. Всё остальное — древо,
-/// конверты, инструменты — уходит ниже сгиба и читается как следующие
-/// страницы той же бумаги. Разделы и выход в кризисные техники живут
-/// в нижнем баре.
+/// Первый экран несёт метку времени суток, крупную фразу, шаг дня
+/// с двумя кнопками и древо. Всё это должно помещаться без скролла:
+/// ритм в 96pt между блоками выглядел красиво в макете, но на живом
+/// телефоне выталкивал древо за нижний бар.
 ///
-/// Раньше здесь стояли семь элементов одной формы (скруглённый
-/// прямоугольник + круглая иконка + заголовок + подзаголовок +
-/// шеврон). Приоритета не было: в кризисе SOS приходилось искать
-/// чтением.
+/// Разделы и практики живут в нижнем баре, конверты и подсказки —
+/// ниже древа.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -75,9 +72,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final quest = QuestPicker.pickToday(slot);
     final survival = survivalFor(slot);
 
-    // Кнопка «Плохо» переехала в нижний бар: раньше она жила только
-    // здесь, и человеку из дневника приходилось сначала выбираться
-    // на главную.
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -87,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: [
               HomeMasthead(isMorning: isMorning),
               _Opening(isDone: isDone, isMorning: isMorning),
-              const SizedBox(height: AppSpacing.huge),
+              const SizedBox(height: AppSpacing.xxl),
               _Choice(
                 isDone: isDone,
                 survivalMode: survivalMode,
@@ -101,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   isMorning ? '/survival/morning' : '/survival/evening',
                 ),
               ),
-              const SizedBox(height: AppSpacing.huge),
+              const SizedBox(height: AppSpacing.xxl),
               _BelowFold(onGo: _go),
               const SizedBox(height: AppSpacing.xl),
             ],
@@ -126,7 +120,7 @@ class HomeMasthead extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.axis,
-        AppSpacing.xxl,
+        AppSpacing.lg,
         AppSpacing.md,
         0,
       ),
@@ -213,7 +207,7 @@ class _Opening extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.axis,
-        AppSpacing.xxxl,
+        AppSpacing.xl,
         AppSpacing.marginRight,
         0,
       ),
@@ -222,8 +216,8 @@ class _Opening extends StatelessWidget {
   }
 }
 
-/// Две строки бланка. Короткая версия набрана тем же кеглем и весом,
-/// что и полная: это равноправный выбор, а не «запасная кнопка».
+/// Шаг дня: название практики и две кнопки. Короткая версия — кнопка
+/// того же размера и кегля, а не серая ссылка внизу.
 class _Choice extends StatelessWidget {
   const _Choice({
     required this.isDone,
@@ -257,67 +251,40 @@ class _Choice extends StatelessWidget {
       );
     }
 
+    // Раньше выбор был набран строками бланка с волосяной линейкой.
+    // Равноправие полной и короткой версии это давало, а вот того,
+    // что сюда можно нажать, — нет: строка с подчёркиванием читается
+    // заголовком. Теперь это две настоящие кнопки одной высоты.
+    final title = survivalMode ? survivalTitle : questTitle;
+    final duration = survivalMode ? '40 секунд' : questDuration;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.axis),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (!survivalMode)
-            _FormLine(
-              text: '$questTitle · $questDuration',
-              color: AppColors.accentPress,
-              onTap: onFull,
-            ),
-          _FormLine(
-            text: survivalMode
-                ? '$survivalTitle · 40 секунд'
-                : 'или короткая версия — 40 секунд',
-            color: survivalMode
-                ? AppColors.accentPress
-                : theme.textTheme.bodyLarge?.color,
-            onTap: onShort,
+          Text(
+            (survivalMode ? 'Режим выживания' : 'Шаг дня').toUpperCase(),
+            style: theme.textTheme.labelSmall,
           ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(title, style: theme.textTheme.headlineMedium),
+          const SizedBox(height: AppSpacing.xs),
+          Text(duration, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: AppSpacing.md),
+          if (!survivalMode) ...[
+            FilledButton(onPressed: onFull, child: const Text('Начать')),
+            const SizedBox(height: AppSpacing.smd),
+            // Короткая версия — кнопка того же размера и кегля, а не
+            // серая ссылка внизу: отказ от полной практики должен
+            // весить столько же, сколько согласие.
+            OutlinedButton(
+              onPressed: onShort,
+              child: const Text('Короткая версия — 40 секунд'),
+            ),
+          ] else
+            FilledButton(onPressed: onShort, child: const Text('Начать')),
         ],
-      ),
-    );
-  }
-}
-
-/// Строка бланка: текст и волосяная линейка до правого края.
-class _FormLine extends StatelessWidget {
-  const _FormLine({
-    required this.text,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String text;
-  final Color? color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.only(
-          top: AppSpacing.md,
-          bottom: AppSpacing.smd,
-        ),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: theme.colorScheme.outline,
-              width: AppStroke.hairline,
-            ),
-          ),
-        ),
-        child: Text(
-          text,
-          style: theme.textTheme.labelLarge?.copyWith(color: color),
-        ),
       ),
     );
   }
@@ -364,12 +331,12 @@ class _BelowFold extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...rows,
               TreeBlock(
                 rings: rings,
                 lights: lights,
                 onTap: () => onGo('/tree'),
               ),
+              ...rows,
             ],
           ),
         ),
