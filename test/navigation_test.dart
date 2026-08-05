@@ -152,6 +152,26 @@ void main() {
       }
     });
 
+    test('на экране специалиста подготовка выше телефонов доверия', () {
+      final s = read('lib/features/help/help_screen.dart');
+      // Порядок должен зависеть от того, как открыли экран: вкладка —
+      // подготовка первой, из кризиса — телефоны первыми.
+      expect(s.contains('if (!canGoBack)'), isTrue,
+          reason: 'порядок блоков должен зависеть от способа входа');
+      final tabBranch = s.indexOf('if (!canGoBack)');
+      final elseBranch = s.indexOf('] else ...[');
+      expect(
+        s.indexOf('_prepareSection', tabBranch),
+        lessThan(s.indexOf('_emergencySection', tabBranch)),
+        reason: 'во вкладке подготовка идёт первой',
+      );
+      expect(
+        s.indexOf('_emergencySection', elseBranch),
+        lessThan(s.indexOf('_prepareSection', elseBranch)),
+        reason: 'из кризиса первым обязан быть телефон доверия',
+      );
+    });
+
     test('состояния в «Практиках» сворачиваются', () {
       final s = read('lib/features/practices/practices_screen.dart');
       expect(s.contains('SosTrigger? _open'), isTrue,

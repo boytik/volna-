@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/widgets/breathing_horizon.dart';
 import '../../data/content/sos_techniques.dart';
 
 /// «Практики» — центральная вкладка и главный вход, когда тяжело.
@@ -49,6 +50,10 @@ class _PracticesScreenState extends State<PracticesScreen> {
               'Это не лечение, это пауза.',
               style: theme.textTheme.bodyLarge,
             ),
+            const SizedBox(height: AppSpacing.md),
+            // Ритм на 6 дыханий в минуту. Ничего не просит и никуда не
+            // ведёт — просто задаёт темп, пока человек выбирает.
+            const BreathingHorizon(),
             const SizedBox(height: AppSpacing.lg),
             for (final t in SosTrigger.values)
               _TriggerBlock(
