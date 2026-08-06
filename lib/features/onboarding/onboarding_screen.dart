@@ -57,6 +57,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     context.go('/');
   }
 
+  /// Спокойное появление страницы: контент мягко всплывает и проявляется по
+  /// мере того, как страница встаёт в центр. Завязано на позицию
+  /// PageController, поэтому одинаково работает и при свайпе, и при переходе
+  /// по кнопке. При включённом «уменьшении движения» — без анимации.
+  Widget _reveal(BuildContext context, int index, Widget child) {
+    if (AppMotion.reduced(context)) return child;
+    return AnimatedBuilder(
+      animation: _controller,
+      child: child,
+      builder: (context, child) {
+        final page = (_controller.hasClients &&
+                _controller.position.haveDimensions)
+            ? (_controller.page ?? _page.toDouble())
+            : _page.toDouble();
+        final t = (1.0 - (index - page).abs()).clamp(0.0, 1.0);
+        final opacity = Curves.easeOut.transform(t);
+        final dy = (1.0 - t) * 24.0; // ниже центра — мягкий подъём
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(offset: Offset(0, dy), child: child),
+        );
+      },
+    );
+  }
+
   String _ctaForPage() {
     switch (_page) {
       case 0:
@@ -110,49 +135,69 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: _controller,
                 onPageChanged: (i) => setState(() => _page = i),
                 children: [
-                  const _StoryPage(
-                    title: 'Ты здесь',
-                    body: 'Значит, сегодня ты решил сделать шаг.\n'
-                        'Не прыжок, не марафон. Один маленький шаг.\n\n'
-                        'Это уже много.',
-                    accent: AppColors.peach,
+                  _reveal(
+                    context,
+                    0,
+                    const _StoryPage(
+                      title: 'Ты здесь',
+                      body: 'Значит, сегодня ты решил сделать шаг.\n'
+                          'Не прыжок, не марафон. Один маленький шаг.\n\n'
+                          'Это уже много.',
+                      accent: AppColors.peach,
+                    ),
                   ),
-                  const _StoryPage(
-                    title: 'Это нормально',
-                    body: 'Ты можешь уставать, злиться, бояться, '
-                        'ничего не хотеть.\n\n'
-                        '«Волна» не требует быть супергероем. '
-                        'Она просто помогает дышать и замечать тепло.',
-                    accent: AppColors.saffron,
+                  _reveal(
+                    context,
+                    1,
+                    const _StoryPage(
+                      title: 'Это нормально',
+                      body: 'Ты можешь уставать, злиться, бояться, '
+                          'ничего не хотеть.\n\n'
+                          '«Волна» не требует быть супергероем. '
+                          'Она просто помогает дышать и замечать тепло.',
+                      accent: AppColors.saffron,
+                    ),
                   ),
-                  const _StoryPage(
-                    title: 'Как это работает',
-                    body: 'Три простых шага каждый день:\n\n'
-                        '— Утром короткий квест (2–3 минуты)\n'
-                        '— В любой момент кнопка «Мне тяжело»\n'
-                        '— Вечером тихий ритуал\n\n'
-                        'Никаких сложных анкет и обязательств.',
-                    accent: AppColors.sage,
+                  _reveal(
+                    context,
+                    2,
+                    const _StoryPage(
+                      title: 'Как это работает',
+                      body: 'Три простых шага каждый день:\n\n'
+                          '— Утром короткий квест (2–3 минуты)\n'
+                          '— В любой момент кнопка «Мне тяжело»\n'
+                          '— Вечером тихий ритуал\n\n'
+                          'Никаких сложных анкет и обязательств.',
+                      accent: AppColors.sage,
+                    ),
                   ),
-                  const _DataPage(),
-                  _AnchorPage(
-                    selectedMorning: _selectedMorningAnchor,
-                    selectedEvening: _selectedEveningAnchor,
-                    onSelectMorning: (id) => setState(() {
-                      _selectedMorningAnchor =
-                          _selectedMorningAnchor == id ? null : id;
-                    }),
-                    onSelectEvening: (id) => setState(() {
-                      _selectedEveningAnchor =
-                          _selectedEveningAnchor == id ? null : id;
-                    }),
+                  _reveal(context, 3, const _DataPage()),
+                  _reveal(
+                    context,
+                    4,
+                    _AnchorPage(
+                      selectedMorning: _selectedMorningAnchor,
+                      selectedEvening: _selectedEveningAnchor,
+                      onSelectMorning: (id) => setState(() {
+                        _selectedMorningAnchor =
+                            _selectedMorningAnchor == id ? null : id;
+                      }),
+                      onSelectEvening: (id) => setState(() {
+                        _selectedEveningAnchor =
+                            _selectedEveningAnchor == id ? null : id;
+                      }),
+                    ),
                   ),
-                  const _StoryPage(
-                    title: 'Первый шаг',
-                    body: 'Сделай три медленных выдоха.\n\n'
-                        'Просто почувствуй, как воздух выходит. '
-                        'Это уже практика. Это уже шаг.',
-                    accent: AppColors.terracotta,
+                  _reveal(
+                    context,
+                    5,
+                    const _StoryPage(
+                      title: 'Первый шаг',
+                      body: 'Сделай три медленных выдоха.\n\n'
+                          'Просто почувствуй, как воздух выходит. '
+                          'Это уже практика. Это уже шаг.',
+                      accent: AppColors.terracotta,
+                    ),
                   ),
                 ],
               ),
@@ -165,7 +210,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       _totalPages,
-                      (i) => Container(
+                      (i) => AnimatedContainer(
+                        duration: AppMotion.reduced(context)
+                            ? Duration.zero
+                            : AppMotion.tap,
+                        curve: AppMotion.enter,
                         width: i == _page ? 24 : 8,
                         height: 8,
                         margin: const EdgeInsets.symmetric(horizontal: 3),

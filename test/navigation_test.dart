@@ -179,10 +179,11 @@ void main() {
       expect(s.contains('AnimatedSize'), isTrue);
     });
 
-    test('«Путь» держит опросники и «что я заметила»', () {
+    test('«Путь» держит «что я заметила»', () {
       final s = read('lib/features/path/path_screen.dart');
       expect(s.contains("'/insights'"), isTrue);
-      expect(s.contains("'/questionnaire'"), isTrue);
+      // Опросники по просьбе заказчицы переехали в «Настройки».
+      expect(s.contains("'/questionnaire'"), isFalse);
     });
 
     test('«Путь» вобрал календарь и знаки присутствия', () {
@@ -263,16 +264,23 @@ void main() {
   });
 
   group('Разделы не возвращаются под шестерёнку', () {
-    test('настройки не прячут календарь, инсайты и опросники', () {
+    test('настройки не прячут календарь и инсайты', () {
       final s =
           File('lib/features/settings/settings_screen.dart').readAsStringSync();
-      for (final route in const ['/insights', '/questionnaire', '/calendar']) {
+      // Опросники — исключение: заказчица попросила вернуть их в настройки.
+      for (final route in const ['/insights', '/calendar']) {
         expect(
           s.contains("push('$route')"),
           isFalse,
           reason: '$route снова похоронен в настройках',
         );
       }
+    });
+
+    test('опросники теперь доступны из настроек', () {
+      final s =
+          File('lib/features/settings/settings_screen.dart').readAsStringSync();
+      expect(s.contains("push('/questionnaire')"), isTrue);
     });
   });
 }

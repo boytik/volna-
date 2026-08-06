@@ -194,10 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Включить режим выживания'),
               ),
             ),
-            // Секции «Дополнительно» здесь больше нет. Календарь,
-            // инсайты и опросники переехали в «Ещё»: это рефлексия и
-            // самооценка, а не конфигурация приложения. Под шестерёнкой
-            // их никто не искал.
+            // Календарь и «что я заметила» живут в «Пути» — это рефлексия,
+            // а не конфигурация. Опросники по просьбе заказчицы вернули сюда
+            // (секция ниже): их удобнее находить под шестерёнкой.
             const SizedBox(height: 24),
             _Section(
               title: 'Данные',
@@ -232,6 +231,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: _confirmWipe,
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _Section(
+              title: 'Опросники',
+              subtitle: 'Короткие шкалы — свериться с собой, когда захочется.',
+              child: _LinkRow(
+                icon: Icons.fact_check_outlined,
+                accent: AppColors.sageDeep,
+                title: 'Пройти опросник',
+                subtitle: 'PSS, PBI, CSI — когда захочется',
+                onTap: () => context.push('/questionnaire'),
               ),
             ),
             const SizedBox(height: 32),
