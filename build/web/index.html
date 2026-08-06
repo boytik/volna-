@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Тёплая поддержка для родителей детей с особенностями. Микро-практики, SOS-техники, голосовая разгрузка.">
+  <meta name="theme-color" content="#FAF6F1">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Волна">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Волна — поддержка родителей</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Splash на время загрузки Flutter-бандла */
+    html, body { margin: 0; padding: 0; background: #FAF6F1; height: 100%; }
+    #boot {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #C97B5C;
+      gap: 12px;
+      transition: opacity 400ms ease-out;
+    }
+    #boot.hidden { opacity: 0; pointer-events: none; }
+    #boot .name { font-size: 14px; letter-spacing: 3px; font-weight: 700; }
+    #boot .dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #F5C9A6, #C97B5C);
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.85; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <div class="dot"></div>
+    <div class="name">ВОЛНА</div>
+  </div>
+  <!-- flutter_sound web — обязательные JS-зависимости для записи голоса в браузере -->
+  <script src="assets/packages/flutter_sound_web/howler/howler.js"></script>
+  <script src="assets/packages/flutter_sound_web/src/flutter_sound.js"></script>
+  <script src="assets/packages/flutter_sound_web/src/flutter_sound_player.js"></script>
+  <script src="assets/packages/flutter_sound_web/src/flutter_sound_recorder.js"></script>
+  <script src="assets/packages/flutter_sound_web/src/flutter_sound_stream_processor.js"></script>
+
+  <script>
+    // Прячем splash как только Flutter отрисовал первый кадр,
+    // либо через 8 сек страховки — если что-то пошло не так,
+    // покажется error-экран приложения, а не вечная заглушка.
+    let bootHidden = false;
+    function hideBoot() {
+      if (bootHidden) return;
+      bootHidden = true;
+      const boot = document.getElementById('boot');
+      if (boot) {
+        boot.classList.add('hidden');
+        setTimeout(() => boot.remove(), 500);
+      }
+    }
+    window.addEventListener('flutter-first-frame', hideBoot);
+    setTimeout(hideBoot, 8000);
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

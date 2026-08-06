@@ -1,0 +1,14 @@
+[2026-08-05T17:12:36.325Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:12:39.085Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1
+[2026-08-05T17:12:41.448Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:12:41.497Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1
+[2026-08-05T17:20:36.442Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:20:36.574Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1
+[2026-08-05T17:20:41.535Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:20:41.596Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1
+[2026-08-05T17:30:02.220Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:30:02.353Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1
+[2026-08-05T17:35:15.765Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:35:15.891Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1
+[2026-08-05T17:46:49.824Z] [debug] Injecting <script> tag. Using callback.
+[2026-08-05T17:46:49.961Z] [warning] WARNING: Falling back to CPU-only rendering. Reason: webGLVersion is -1

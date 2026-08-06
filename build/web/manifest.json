@@ -1,0 +1,36 @@
+{
+    "name": "Волна — поддержка родителей",
+    "short_name": "Волна",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FAF6F1",
+    "theme_color": "#C97B5C",
+    "description": "Тёплая поддержка для родителей детей с особенностями. Микро-практики, SOS-техники, голосовая разгрузка.",
+    "lang": "ru",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

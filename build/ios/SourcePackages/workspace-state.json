@@ -7,14 +7,31 @@
       {
         "basedOn" : null,
         "packageRef" : {
+          "identity" : "cwlcatchexception",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/mattgallagher/CwlCatchException.git",
+          "name" : "CwlCatchException"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "07b2ba21d361c223e25e3c1e924288742923f08c",
+            "version" : "2.2.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "CwlCatchException"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
           "identity" : "flutterframework",
           "kind" : "fileSystem",
-          "location" : "/Users/evgenij/Develop/volna/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework",
+          "location" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework",
           "name" : "FlutterFramework"
         },
         "state" : {
           "name" : "fileSystem",
-          "path" : "/Users/evgenij/Develop/volna/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
+          "path" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
         },
         "subpath" : "flutterframework"
       },
@@ -23,26 +40,40 @@
         "packageRef" : {
           "identity" : "shared_preferences_foundation-2.5.6",
           "kind" : "fileSystem",
-          "location" : "/Users/evgenij/Develop/volna/ios/Flutter/ephemeral/Packages/.packages/shared_preferences_foundation-2.5.6",
+          "location" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/shared_preferences_foundation-2.5.6",
           "name" : "shared_preferences_foundation"
         },
         "state" : {
           "name" : "fileSystem",
-          "path" : "/Users/evgenij/Develop/volna/ios/Flutter/ephemeral/Packages/.packages/shared_preferences_foundation-2.5.6"
+          "path" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/shared_preferences_foundation-2.5.6"
         },
         "subpath" : "shared_preferences_foundation-2.5.6"
       },
       {
         "basedOn" : null,
         "packageRef" : {
+          "identity" : "speech_to_text-7.4.0",
+          "kind" : "fileSystem",
+          "location" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/speech_to_text-7.4.0",
+          "name" : "speech_to_text"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/speech_to_text-7.4.0"
+        },
+        "subpath" : "speech_to_text-7.4.0"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
           "identity" : "url_launcher_ios-6.4.1",
           "kind" : "fileSystem",
-          "location" : "/Users/evgenij/Develop/volna/ios/Flutter/ephemeral/Packages/.packages/url_launcher_ios-6.4.1",
+          "location" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/url_launcher_ios-6.4.1",
           "name" : "url_launcher_ios"
         },
         "state" : {
           "name" : "fileSystem",
-          "path" : "/Users/evgenij/Develop/volna/ios/Flutter/ephemeral/Packages/.packages/url_launcher_ios-6.4.1"
+          "path" : "/Users/evgenij/Desktop/volna-/ios/Flutter/ephemeral/Packages/.packages/url_launcher_ios-6.4.1"
         },
         "subpath" : "url_launcher_ios-6.4.1"
       }
