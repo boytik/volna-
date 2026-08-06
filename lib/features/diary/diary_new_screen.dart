@@ -73,9 +73,16 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
       entry.envelopeStatus = 'sealed';
       final at = DateTime.now().add(const Duration(days: 1));
       entry.envelopeReopenAt = at;
-      final notifId = await notificationService.scheduleEnvelopeReopen(
-        after: const Duration(days: 1),
-      );
+      // Конверт обещает вернуть мысль завтра — без разрешения на уведомления
+      // iOS тихо не покажет напоминание, а человек будет ждать. Спрашиваем
+      // контекстно, ровно в этот момент. Не дали — конверт всё равно
+      // запечатываем, просто без пуша (notifId == -1 → null).
+      final granted = await notificationService.requestPermission();
+      final notifId = granted
+          ? await notificationService.scheduleEnvelopeReopen(
+              after: const Duration(days: 1),
+            )
+          : -1;
       entry.envelopeNotificationId = notifId == -1 ? null : notifId;
     }
 

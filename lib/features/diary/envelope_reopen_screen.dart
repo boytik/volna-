@@ -127,8 +127,15 @@ class EnvelopeReopenScreen extends StatelessWidget {
                   if (oldId != null) {
                     await notificationService.cancelEnvelope(oldId);
                   }
-                  final notifId = await notificationService
-                      .scheduleEnvelopeReopen(after: const Duration(days: 1));
+                  // Как и при запечатывании: без разрешения пуш не придёт,
+                  // поэтому спрашиваем перед планированием. Отказ → без пуша.
+                  final granted =
+                      await notificationService.requestPermission();
+                  final notifId = granted
+                      ? await notificationService.scheduleEnvelopeReopen(
+                          after: const Duration(days: 1),
+                        )
+                      : -1;
                   await diaryStorage.update(
                     entry.copyWith(
                       envelopeStatus: 'sealed',
