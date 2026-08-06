@@ -9,8 +9,12 @@
 
     <!-- Локальные напоминания. POST_NOTIFICATIONS обязателен с Android 13. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- SCHEDULE_EXACT_ALARM оставляем: на Android 12 даёт точный будильник,
+         на 13+ без явной выдачи NotificationService молча откатывается на
+         неточный режим (точность до минуты для напоминаний не нужна).
+         USE_EXACT_ALARM убрали: Google Play разрешает его только будильникам
+         и календарям — для приложения-напоминалки это риск отклонения. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
