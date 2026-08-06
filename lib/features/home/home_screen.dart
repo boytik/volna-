@@ -50,10 +50,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _checkBadges() async {
+    // checkUnlocks и записывает новые значки, и возвращает их. Записываем
+    // всегда (иначе значок не появится в коллекции «Пути»), а поздравление
+    // показываем только когда видна сама главная.
     final newly = await badgesService.checkUnlocks();
     if (!mounted || newly.isEmpty) return;
-    await NewBadgeOverlay.showAll(context, newly);
+    // Значки могли открыться в другой вкладке (специалист, дневник) или пока
+    // человек был во внешнем браузере. Показывать пачку модалок поверх чужого
+    // экрана — то, на что жаловались. На чужом экране просто тихо пополняем
+    // коллекцию; поздравление придёт, когда главная снова окажется активной.
+    if (_isHomeCurrent()) {
+      await NewBadgeOverlay.showAll(context, newly);
+    }
     if (mounted) setState(() {});
+  }
+
+  /// Главная сейчас на переднем плане (ничего не открыто поверх оболочки и это
+  /// не другая вкладка). Берём глобальное текущее место из go_router — внутри
+  /// ветки оболочки локальный матч всегда «/», поэтому смотрим весь маршрут.
+  bool _isHomeCurrent() {
+    final location =
+        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    return location == '/';
   }
 
   Future<void> _go(String path) async {
