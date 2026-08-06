@@ -286,15 +286,21 @@ class _Section extends StatelessWidget {
         color: AppColors.paperLift,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 6),
-          Text(subtitle, style: theme.textTheme.bodyMedium),
-          const SizedBox(height: 8),
-          child,
-        ],
+      // Прозрачный Material над фоном секции: без него ListTile/SwitchListTile
+      // рисуют ripple под заливкой paperLift и он не виден (Flutter 3.44 на это
+      // прямо ругается). Фон и вёрстка не меняются.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.titleLarge),
+            const SizedBox(height: 6),
+            Text(subtitle, style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            child,
+          ],
+        ),
       ),
     );
   }

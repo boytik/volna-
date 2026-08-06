@@ -17,17 +17,6 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('онбординг → Настройки → опросники открываются', (tester) async {
-    // Flutter 3.44 ругается, что SwitchListTile в секциях настроек (контейнер с
-    // фоном paperLift) прячет ink-splash. Это косметическое предупреждение, не
-    // краш; глушим именно его, чтобы не заваливать проход. Остальные ошибки
-    // по-прежнему всплывают. (Записано в отчёт как находка совместимости.)
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.toString().contains('ink splashes may be invisible')) return;
-      originalOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = originalOnError);
-
     await app.main();
     // Онбординг статичен (бесконечных анимаций нет) — тут pumpAndSettle можно.
     await tester.pumpAndSettle();
