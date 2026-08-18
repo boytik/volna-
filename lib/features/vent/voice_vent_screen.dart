@@ -106,6 +106,20 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   // ---------------------- Запись ----------------------
 
   Future<void> _startRecording() async {
+    // Проверяем облако ДО записи — на обоих путях. Раньше проверка
+    // стояла только в облачной ветке, и человек с локальным
+    // распознаванием говорил 90 секунд, читал расшифровку, жал
+    // «отправить» и только там узнавал, что зря: ответ всё равно
+    // приходит из Azure, аудио там или только текст.
+    if (!cloudVoiceEnabled || azureOpenAiApiKey.isEmpty) {
+      setState(() {
+        _stage = _Stage.error;
+        _errorMessage = 'Разбор голоса сейчас недоступен. '
+            'Можно написать текстом — это работает без облака.';
+      });
+      return;
+    }
+
     if (_useOnDevice) return _startOnDevice();
     return _startCloudRecording();
   }
@@ -187,17 +201,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   }
 
   Future<void> _startCloudRecording() async {
-    // Проверяем облако ДО записи. Раньше проверка стояла после stop(),
-    // и человек сначала говорил 90 секунд, а потом узнавал, что зря.
-    if (!cloudVoiceEnabled || azureOpenAiApiKey.isEmpty) {
-      setState(() {
-        _stage = _Stage.error;
-        _errorMessage = 'Разбор голоса сейчас недоступен. '
-            'Можно написать текстом — это работает без облака.';
-      });
-      return;
-    }
-
+    // Доступность облака уже проверена в _startRecording.
     final allowed = await _recorder.hasPermission();
     if (!mounted) return;
     if (!allowed) {
