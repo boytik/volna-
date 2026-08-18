@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Сплэш. Следует системной теме: ночной вариант — в
+         values-night/colors.xml. Приложение стоит на тёплой бумаге,
+         старт с белого давал вспышку. -->
+    <color name="volna_paper">#FAF6F1</color>
+
+    <!-- Подложка adaptive-иконки. Намеренно без ночного варианта:
+         иконка на лаунчере не должна менять цвет вместе с темой. -->
+    <color name="volna_paper_icon">#FAF6F1</color>
+</resources>
