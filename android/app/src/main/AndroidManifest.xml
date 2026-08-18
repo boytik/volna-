@@ -71,5 +71,16 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
+
+        <!-- Без этой записи package visibility (Android 11+) прячет от
+             приложения движок распознавания речи: speech_to_text его не
+             находит, initialize() возвращает false, и локальный путь
+             «выговориться» не поднимается вовсе.
+             Цена ошибки здесь не в неудобстве: человек уезжает в облако
+             с телефона, который умеет распознавать сам, — то есть аудио
+             покидает устройство без нужды. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
     </queries>
 </manifest>
