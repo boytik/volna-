@@ -358,6 +358,20 @@ class _EntryCard extends StatelessWidget {
 /// Вход в «выговориться» из дневника. Знак «уходит на сервер» стоит
 /// не здесь, а на экране выбора: он относится к голосу, а не ко всему
 /// разделу — текст никуда не отправляется.
+///
+/// Раньше это была строка бланка: волосяная линейка сверху, заголовок
+/// `titleLarge` и подпись. Ровно тем же `titleLarge` набран заголовок
+/// «Новая запись» тремя строками ниже — так что строка читалась не
+/// кнопкой, а названием раздела, и функцию просто не замечали.
+///
+/// Это уже третий раз, когда бланк проигрывает: то же было с
+/// «короткой версией» квеста и со строками главного экрана. Вывод в
+/// DESIGN.md записан — affordance важнее символической симметрии.
+///
+/// Теперь это «вклейка»: приподнятый листок, радиус 4, линия по краю,
+/// без тени. От трёх плиток «Новой записи» отличается именно линией и
+/// стрелкой: те создают запись (значок «плюс»), эта уводит на другой
+/// экран.
 class _VentRow extends StatelessWidget {
   const _VentRow({
     required this.title,
@@ -373,25 +387,51 @@ class _VentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return InkWell(
-      onTap: () => context.push(route),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: theme.colorScheme.outline,
-              width: AppStroke.hairline,
-            ),
-          ),
+    return Material(
+      color: AppColors.paperLift,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.smR,
+        side: const BorderSide(
+          color: AppColors.rule,
+          width: AppStroke.hairline,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: theme.textTheme.titleLarge),
-            const SizedBox(height: AppSpacing.xs),
-            Text(note, style: theme.textTheme.bodyMedium),
-          ],
+      ),
+      child: InkWell(
+        onTap: () => context.push(route),
+        borderRadius: AppRadius.smR,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.record_voice_over_outlined,
+                  color: AppColors.accent,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 2),
+                    Text(note, style: theme.textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                color: AppColors.inkQuiet,
+              ),
+            ],
+          ),
         ),
       ),
     );
