@@ -39,5 +39,40 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # permission_handler компилирует ВСЕ свои обработчики, если не сказать
+    # обратное. В бинарник тогда попадают фото, контакты, календарь и
+    # трекинг — без purpose strings в Info.plist, и App Store Connect
+    # отбивает заливку по ITMS-90683.
+    #
+    # Приложению нужен ровно один: микрофон («Выговорись» голосом,
+    # lib/services/audio_recorder_service.dart:32). Разрешения на
+    # уведомления запрашивает flutter_local_notifications, не этот плагин,
+    # поэтому PERMISSION_NOTIFICATIONS тоже выключен.
+    target.build_configurations.each do |config|
+      # flutter_additional_ios_build_settings мог уже что-то сюда положить,
+      # поэтому не перезаписываем, а дописываем — и приводим к массиву,
+      # если там оказалась строка.
+      existing = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+      existing = [existing] unless existing.is_a?(Array)
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = existing + [
+        'PERMISSION_MICROPHONE=1',
+        'PERMISSION_EVENTS=0',
+        'PERMISSION_EVENTS_FULL_ACCESS=0',
+        'PERMISSION_REMINDERS=0',
+        'PERMISSION_CONTACTS=0',
+        'PERMISSION_CAMERA=0',
+        'PERMISSION_SPEECH_RECOGNIZER=0',
+        'PERMISSION_PHOTOS=0',
+        'PERMISSION_LOCATION=0',
+        'PERMISSION_NOTIFICATIONS=0',
+        'PERMISSION_MEDIA_LIBRARY=0',
+        'PERMISSION_SENSORS=0',
+        'PERMISSION_BLUETOOTH=0',
+        'PERMISSION_APP_TRACKING_TRANSPARENCY=0',
+        'PERMISSION_CRITICAL_ALERTS=0',
+        'PERMISSION_ASSISTANT=0',
+      ]
+    end
   end
 end

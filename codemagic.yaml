@@ -1,0 +1,216 @@
+# codemagic.yaml — сборка «Волны» и выкладка тестерам.
+#
+# Что нужно завести в Codemagic до первого запуска (в UI, не здесь —
+# идентификаторы и ключи в репозиторий не кладём, HANDOFF §5):
+#
+#   1. Teams → Integrations → App Store Connect → Add key, имя `volna_asc`.
+#      Issuer ID, Key ID и файл AuthKey_*.p8 берутся из App Store Connect.
+#   2. Запись приложения в App Store Connect с bundle ID
+#      com.pavelhegai.volna (иначе загрузка отвалится).
+#   3. Группа переменных `azure` со значениями из lib/config/secrets.dart:
+#        AZURE_OPENAI_ENDPOINT   (secure)
+#        AZURE_OPENAI_API_KEY    (secure)
+#      Сам secrets.dart в git не хранится — он собирается шагом ниже.
+#   4. Для Android: Teams → Code signing identities → Android keystore,
+#      имя `volna_keystore`.
+
+definitions:
+  scripts:
+    - &write_secrets
+      name: Собрать lib/config/secrets.dart
+      script: |
+        # Файл в .gitignore, поэтому в клоне его нет, а три модуля его
+        # импортируют — без этого шага сборка падает на компиляции.
+        # Значения деплойментов не секретны и живут прямо здесь.
+        cat > lib/config/secrets.dart <<EOF
+        /// Сгенерировано codemagic.yaml. Локально — из secrets.dart.example.
+        library;
+
+        const azureOpenAiEndpoint = '${AZURE_OPENAI_ENDPOINT}';
+        const azureOpenAiApiKey = '${AZURE_OPENAI_API_KEY}';
+        const transcribeDeployment = 'gpt-4o-transcribe';
+        const transcribeApiVersion = '2025-03-01-preview';
+        const chatDeployment = 'gpt-5.4-mini';
+        const chatApiVersion = '2024-12-01-preview';
+        const cloudVoiceEnabled = true;
+        EOF
+        if [ -z "$AZURE_OPENAI_API_KEY" ]; then
+          echo "ВНИМАНИЕ: AZURE_OPENAI_API_KEY пуст — облачное «выговориться» в этой сборке работать не будет."
+        fi
+
+    - &deps
+      name: Подтянуть зависимости
+      script: flutter pub get
+
+    - &analyze
+      name: Статический анализ
+      script: flutter analyze
+
+    - &test
+      name: Тесты
+      # Не ignore_failure: здесь живут сторожа приватности
+      # (test/privacy_test.dart, test/navigation_test.dart) — они обязаны
+      # блокировать релиз, иначе смысла в них нет.
+      script: flutter test
+
+workflows:
+  ios-testflight:
+    name: iOS → TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: volna_asc
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+      groups:
+        - azure
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.pavelhegai.volna
+
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+      cancel_previous_builds: true
+
+    scripts:
+      - *write_secrets
+      - *deps
+      - *analyze
+      - *test
+
+      - name: Прописать профили в Xcode-проект
+        script: xcode-project use-profiles
+
+      - name: Собрать IPA
+        script: |
+          # $BUILD_NUMBER — счётчик самого Codemagic, монотонный и
+          # не требующий числового Apple ID приложения. Раньше здесь
+          # стоял get-latest-testflight-build-number с плейсхолдером
+          # 0000000000: он молча падал в 0, номер всегда получался 1,
+          # и вторая заливка отбивалась по дублю.
+          flutter build ipa --release \
+            --build-name=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1) \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - QA            # ← группа должна существовать в TestFlight
+        submit_to_app_store: false
+
+      email:
+        recipients:
+          - boytik@actvox.dev
+        notify:
+          success: true
+          failure: true
+
+  # ---------------------------------------------------------------
+  android-aab:
+    name: Android → AAB
+    max_build_duration: 45
+    instance_type: mac_mini_m2
+
+    environment:
+      flutter: stable
+      java: 17
+
+      groups:
+        - azure
+
+      android_signing:
+        - volna_keystore
+
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+      cancel_previous_builds: true
+
+    scripts:
+      - *write_secrets
+      - *deps
+      - *analyze
+      - *test
+
+      - name: Собрать android/key.properties из keystore Codemagic
+        script: |
+          # build.gradle.kts читает ключ отсюда; без файла собирается
+          # debug-подписью, которую Play не примет.
+          cat > android/key.properties <<EOF
+          storePassword=${CM_KEYSTORE_PASSWORD}
+          keyPassword=${CM_KEY_PASSWORD}
+          keyAlias=${CM_KEY_ALIAS}
+          storeFile=${CM_KEYSTORE_PATH}
+          EOF
+
+      - name: Собрать AAB
+        script: |
+          flutter build appbundle --release \
+            --build-name=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1) \
+            --build-number=$BUILD_NUMBER
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+
+    publishing:
+      email:
+        recipients:
+          - boytik@actvox.dev
+        notify:
+          success: true
+          failure: true
+
+  # ---------------------------------------------------------------
+  # Быстрая проверка, что подпись и сборка вообще проходят.
+  # ---------------------------------------------------------------
+  ios-build-only:
+    name: iOS → только сборка (без TestFlight)
+    max_build_duration: 45
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: volna_asc
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      groups:
+        - azure
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.pavelhegai.volna
+
+    scripts:
+      - *write_secrets
+      - *deps
+      - name: Профили
+        script: xcode-project use-profiles
+      - name: Сборка IPA
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
