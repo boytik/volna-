@@ -252,6 +252,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
     final text = await _transcribe.transcribe(
       bytes: bytes,
       webBlobUrl: webUrl,
+      filename: _recorder.uploadFilename,
     );
 
     if (!mounted) return;

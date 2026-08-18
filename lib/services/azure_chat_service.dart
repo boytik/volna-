@@ -38,7 +38,10 @@ class AzureChatService {
         },
       ],
       'temperature': 0.6,
-      'max_tokens': 400,
+      // Не 'max_tokens': gpt-5.4-mini его не принимает и отвечает 400
+      // «Unsupported parameter … Use 'max_completion_tokens' instead».
+      // Пока ключей не было, ошибка была не видна — запрос не уходил.
+      'max_completion_tokens': 400,
       'response_format': {'type': 'json_object'},
     });
 

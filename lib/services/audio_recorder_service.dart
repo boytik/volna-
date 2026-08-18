@@ -8,7 +8,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 /// Обёртка над flutter_sound.
 ///
-/// На iOS пишем AAC в .aac, на вебе flutter_sound автоматически использует Opus в WebM.
+/// На iOS пишем AAC в контейнере MP4 (.m4a), на вебе — Opus в WebM.
+///
+/// Контейнер здесь не косметика: Azure смотрит на содержимое файла, а не
+/// на имя. Раньше писался «сырой» ADTS в .aac, и распознавание отвечало
+/// 400 «Unsupported file format aac» — при том что сервис отправлял его
+/// под именем audio.m4a. Пока ключей Azure не было, ошибка не всплывала:
+/// запрос просто не уходил.
 /// Для облегчённого hold-to-talk сценария обнажаем три метода: start / stop / cancel + поток амплитуды.
 class AudioRecorderService {
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -18,6 +24,10 @@ class AudioRecorderService {
 
   String? get currentPath => _currentPath;
   String? get webBlobUrl => _webBlobUrl;
+
+  /// Имя для выгрузки — должно соответствовать реальному контейнеру:
+  /// по нему распознавание понимает, что ему прислали.
+  String get uploadFilename => kIsWeb ? 'audio.webm' : 'audio.m4a';
 
   Stream<RecordingDisposition>? get _progress => _recorder.onProgress;
 
@@ -55,8 +65,8 @@ class AudioRecorderService {
       codec = Codec.opusWebM;
     } else {
       final dir = await getTemporaryDirectory();
-      path = '${dir.path}/vent_${DateTime.now().millisecondsSinceEpoch}.aac';
-      codec = Codec.aacADTS;
+      path = '${dir.path}/vent_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      codec = Codec.aacMP4;
     }
     _currentPath = path;
 
