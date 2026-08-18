@@ -3,8 +3,10 @@
          permanentlyDenied и запись не стартует вообще. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
-    <!-- Azure OpenAI («Выговорись» голосом) и загрузка шрифтов google_fonts.
-         Без этого release-сборка теряет сеть: облако и шрифты молча отваливаются. -->
+    <!-- Azure OpenAI — единственное, ради чего приложению нужна сеть.
+         Шрифты раньше тоже качались в рантайме через google_fonts;
+         теперь они вшиты в assets, и сеть за пределами «Выговорись»
+         не используется вовсе. -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <!-- Локальные напоминания. POST_NOTIFICATIONS обязателен с Android 13. -->

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 
@@ -22,9 +21,16 @@ import 'colors.dart';
 class AppTypography {
   AppTypography._();
 
+  /// Семейства вшиты в assets (см. pubspec.yaml). Раньше их тянул
+  /// google_fonts по сети — на каждом экране, включая дневник и
+  /// опросники, при том что приложение обещает работать без сервера.
+  static const serifFamily = 'Literata';
+  static const sansFamily = 'Golos Text';
+
   /// Микро-метка: 11px, tracking 0.16em. Регистр поднимается в месте
   /// использования (`.toUpperCase()`), не здесь.
-  static TextStyle micro({Color? color}) => GoogleFonts.golosText(
+  static TextStyle micro({Color? color}) => TextStyle(
+        fontFamily: sansFamily,
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 11 * 0.16,
@@ -38,7 +44,8 @@ class AppTypography {
     Color? color,
     FontStyle? fontStyle,
   }) =>
-      GoogleFonts.literata(
+      TextStyle(
+        fontFamily: serifFamily,
         fontSize: size,
         fontWeight: FontWeight.w500,
         height: 1.4,
@@ -52,7 +59,8 @@ class AppTypography {
     final soft = night ? AppColors.nightInkSoft : AppColors.inkSoft;
     final quiet = night ? AppColors.nightInkQuiet : AppColors.inkQuiet;
 
-    TextStyle serif(double size, double lineHeight) => GoogleFonts.literata(
+    TextStyle serif(double size, double lineHeight) => TextStyle(
+          fontFamily: serifFamily,
           fontSize: size,
           fontWeight: FontWeight.w500,
           height: lineHeight / size,
@@ -66,7 +74,8 @@ class AppTypography {
       FontWeight weight = FontWeight.w400,
       required Color color,
     }) =>
-        GoogleFonts.golosText(
+        TextStyle(
+          fontFamily: sansFamily,
           fontSize: size,
           fontWeight: weight,
           height: lineHeight / size,
@@ -85,7 +94,8 @@ class AppTypography {
       bodyMedium: sans(15, 23, color: soft),
       bodySmall: sans(13, 18, color: quiet),
       labelLarge: sans(16, 22, weight: FontWeight.w600, color: body),
-      labelSmall: GoogleFonts.golosText(
+      labelSmall: TextStyle(
+        fontFamily: sansFamily,
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 11 * 0.16,
