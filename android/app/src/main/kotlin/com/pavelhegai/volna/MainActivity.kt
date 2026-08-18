@@ -1,4 +1,4 @@
-package io.volna.volna
+package com.pavelhegai.volna
 
 import android.os.Build
 import android.speech.SpeechRecognizer

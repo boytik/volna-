@@ -24,8 +24,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Чтобы выслушать тебя, «Волне» нужен микрофон. Если телефон умеет распознавать речь без интернета, запись не покидает устройство вовсе. Если не умеет — «Волна» спросит отдельно, прежде чем что-то отправить.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>«Волна» превращает твою речь в текст прямо на телефоне, без интернета. Аудио никуда не отправляется.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -47,10 +53,6 @@
 			</array>
 		</dict>
 	</dict>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Чтобы выслушать тебя, «Волне» нужен микрофон. Если телефон умеет распознавать речь без интернета, запись не покидает устройство вовсе. Если не умеет — «Волна» спросит отдельно, прежде чем что-то отправить.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>«Волна» превращает твою речь в текст прямо на телефоне, без интернета. Аудио никуда не отправляется.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
