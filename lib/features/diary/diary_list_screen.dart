@@ -301,7 +301,7 @@ class _EntryCard extends StatelessWidget {
                   Text(
                     entry.kind.label.toUpperCase(),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.terracotta,
+                      color: AppColors.accentPress,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
                     ),

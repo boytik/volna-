@@ -41,7 +41,7 @@ class InsightsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             if (insights.isEmpty)
-              _Empty(daysCollected: _daysCollected())
+              const _Empty()
             else
               ...insights.map(
                 (i) => Padding(
@@ -126,17 +126,21 @@ class InsightsScreen extends StatelessWidget {
       );
     }
 
-    // 3. Простая статистика: сколько шагов за неделю.
+    // 3. Факт регулярности — без числа.
+    //
+    // Здесь стояло «$completedThisWeek шагов за неделю»: счётчик, который
+    // падает, обнуляется каждую неделю и исчезает целиком при спаде.
+    // Приписка «не сравнивай с прошлой неделей» была признанием, что
+    // сравнивать тут есть с чем, — а по DESIGN.md быть не должно.
     final week = questStorage.activityLastDays(7);
     final completedThisWeek = week.fold<int>(0, (s, d) => s + d.count);
     if (completedThisWeek >= 5) {
       insights.add(
-        _Insight(
+        const _Insight(
           icon: Icons.eco_rounded,
           color: AppColors.sageDeep,
-          title: '$completedThisWeek шагов за неделю',
-          body: 'Это хорошо. Не сравнивай с прошлой неделей — '
-              'просто заметь, что ты приходишь.',
+          title: 'На этой неделе ты приходила часто',
+          body: 'Это хорошо. Не сравнивай с прошлой неделей — просто заметь.',
         ),
       );
     }
@@ -148,33 +152,43 @@ class InsightsScreen extends StatelessWidget {
       values.fold<double>(0, (s, v) => s + v) / values.length;
 }
 
+/// Пустое состояние без обратного отсчёта.
+///
+/// Здесь стояло «Ещё N дней — и появятся первые наблюдения». Счётчик до
+/// разблокировки DESIGN.md запрещает прямо, но хуже было другое:
+/// `_daysCollected` считает по скользящему окну в 30 дней, так что N
+/// умело **расти обратно**. Человек, который пропустил неделю, видел,
+/// что до наблюдений стало дальше, чем было.
 class _Empty extends StatelessWidget {
-  const _Empty({required this.daysCollected});
-  final int daysCollected;
+  const _Empty();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final remaining = (7 - daysCollected).clamp(0, 7);
 
     return Container(
       padding: const EdgeInsets.all(20),
+      // Вклейка: приподнятый листок, линия по краю, без тени — по
+      // DESIGN.md это единственный разрешённый контейнер. Персиковая
+      // заливка на всю ширину была наследием снятого решения.
       decoration: BoxDecoration(
-        color: AppColors.peachSoft.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        color: AppColors.paperLift,
+        borderRadius: AppRadius.smR,
+        border: Border.all(
+          color: AppColors.rule,
+          width: AppStroke.hairline,
+        ),
       ),
       child: Column(
         children: [
           const Icon(
             Icons.hourglass_empty_rounded,
             size: 32,
-            color: AppColors.terracotta,
+            color: AppColors.accent,
           ),
           const SizedBox(height: 12),
           Text(
-            remaining == 0
-                ? 'Пока недостаточно данных для наблюдений'
-                : 'Ещё $remaining ${_dayWord(remaining)} — и появятся первые наблюдения',
+            'Наблюдения появятся, когда чек-инов станет побольше',
             style: theme.textTheme.titleLarge,
             textAlign: TextAlign.center,
           ),
@@ -187,15 +201,6 @@ class _Empty extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _dayWord(int n) {
-    final mod10 = n % 10;
-    final mod100 = n % 100;
-    if (mod100 >= 11 && mod100 <= 14) return 'дней';
-    if (mod10 == 1) return 'день';
-    if (mod10 >= 2 && mod10 <= 4) return 'дня';
-    return 'дней';
   }
 }
 

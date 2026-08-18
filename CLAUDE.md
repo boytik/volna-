@@ -97,8 +97,22 @@ In QA mode, flag any code that doesn't match DESIGN.md.
 ```bash
 flutter analyze                                    # без замечаний
 flutter test                                       # все зелёные
-grep -rn "Color(0x" lib/features/ | wc -l          # 0
-grep -rn "Colors.white" lib/features/ | wc -l      # 0
-grep -rn "Gradient\|BoxShadow" lib/ | grep -v core/theme | wc -l   # 0
-grep -rho "circular([0-9]" lib/features/ | wc -l   # 0
+```
+
+Чеклист по токенам теперь сторожит `test/design_tokens_test.dart`, а не
+глаз: цвета числом, `Colors.white`, градиенты и тени, радиусы числом,
+эмодзи и `accent` как цвет текста. Проверяется **весь `lib/`**, кроме
+`lib/core/theme/`.
+
+Раньше те же grep'ы смотрели только в `lib/features/` — и не видели
+`lib/main.dart`, где экран падения жил с пятью цветами, вписанными
+числом, и системным шрифтом. Если добавляешь правило в DESIGN.md,
+добавь его и туда: документ, который никто не проверяет, расходится с
+кодом за пару итераций.
+
+Отдельно: `@Deprecated`-токены в `AppColors` анализатор **не показывает** —
+о deprecated внутри своего же пакета Dart молчит. Проверять руками:
+
+```bash
+grep -rn "AppColors.terracotta\|AppColors.peach\|AppColors.coral" lib/ | wc -l
 ```

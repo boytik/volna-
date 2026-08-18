@@ -142,10 +142,12 @@ class _MoodRow extends StatelessWidget {
   final ValueChanged<MoodValue> onChanged;
   final Color accent;
 
+  // Смайлы убраны: DESIGN.md запрещает эмодзи, и подпись под каждым
+  // и так называла то же самое словом.
   static const _items = [
-    (MoodValue.bad, '😔', 'Плохо'),
-    (MoodValue.neutral, '😐', 'Средне'),
-    (MoodValue.good, '😊', 'Хорошо'),
+    (MoodValue.bad, 'Плохо'),
+    (MoodValue.neutral, 'Средне'),
+    (MoodValue.good, 'Хорошо'),
   ];
 
   @override
@@ -157,8 +159,7 @@ class _MoodRow extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: _Tile(
-              emoji: item.$2,
-              label: item.$3,
+              label: item.$2,
               selected: isSel,
               accent: accent,
               onTap: () => onChanged(item.$1),
@@ -187,14 +188,14 @@ class _SleepRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = isMorning
         ? const [
-            (SleepValue.bad, '😴', 'Плохо'),
-            (SleepValue.normal, '🛌', 'Нормально'),
-            (SleepValue.great, '✨', 'Отлично'),
+            (SleepValue.bad, 'Плохо'),
+            (SleepValue.normal, 'Нормально'),
+            (SleepValue.great, 'Отлично'),
           ]
         : const [
-            (SleepValue.bad, '🌧', 'Тяжело'),
-            (SleepValue.normal, '🌤', 'Нормально'),
-            (SleepValue.great, '☀️', 'Хорошо'),
+            (SleepValue.bad, 'Тяжело'),
+            (SleepValue.normal, 'Нормально'),
+            (SleepValue.great, 'Хорошо'),
           ];
 
     return Row(
@@ -204,8 +205,7 @@ class _SleepRow extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: _Tile(
-              emoji: item.$2,
-              label: item.$3,
+              label: item.$2,
               selected: isSel,
               accent: accent,
               onTap: () => onChanged(item.$1),
@@ -219,14 +219,12 @@ class _SleepRow extends StatelessWidget {
 
 class _Tile extends StatelessWidget {
   const _Tile({
-    required this.emoji,
     required this.label,
     required this.selected,
     required this.accent,
     required this.onTap,
   });
 
-  final String emoji;
   final String label;
   final bool selected;
   final Color accent;
@@ -251,15 +249,15 @@ class _Tile extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 32)),
-              const SizedBox(height: 6),
+              // Раньше сверху стоял смайл на 32pt, а подпись была
+              // мелкой служебной строкой. Без смайла подпись и есть
+              // содержание плитки, поэтому набирается в полный кегль.
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                ),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
               ),
             ],
           ),

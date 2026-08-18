@@ -60,7 +60,7 @@ class _CategoryBlock extends StatelessWidget {
         Text(
           category.title.toUpperCase(),
           style: theme.textTheme.bodySmall?.copyWith(
-            color: AppColors.terracotta,
+            color: AppColors.accentPress,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
           ),

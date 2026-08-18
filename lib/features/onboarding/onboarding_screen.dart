@@ -118,7 +118,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Text(
                     'ВОЛНА',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.terracotta,
+                      color: AppColors.accentPress,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 3,
                     ),
@@ -461,7 +461,7 @@ class _AnchorPage extends StatelessWidget {
   }
 
   TextStyle? _label(ThemeData theme) => theme.textTheme.bodySmall?.copyWith(
-        color: AppColors.terracotta,
+        color: AppColors.accentPress,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.4,
       );

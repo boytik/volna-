@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 import 'app/router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/colors.dart';
+import 'core/theme/tokens.dart';
+import 'core/theme/typography.dart';
 import 'data/content/quests.dart';
 import 'data/local/badges_storage.dart';
 import 'data/local/checkin_storage.dart';
@@ -86,7 +89,17 @@ class VolnaApp extends StatelessWidget {
 }
 
 /// Показывается, если main-инициализация полностью упала.
-/// Никаких сложных зависимостей.
+///
+/// Зависимостей по-прежнему минимум: `AppColors` — константы, а
+/// `AppTypography` — чистая функция над вшитыми в assets шрифтами.
+/// Ничего из этого не требует инициализации, которая только что не
+/// удалась.
+///
+/// Раньше экран был набран пятью цветами, вписанными числом, и
+/// системным шрифтом: чеклист из CLAUDE.md смотрит в `lib/features/`
+/// и сюда не заглядывал. Среди них жил `0xFF9A9189` — снятое значение
+/// `inkQuiet`, которое затемнили именно потому, что оно давало 2.9:1
+/// и не проходило AA, да ещё на кегле 12.
 class _FatalErrorApp extends StatelessWidget {
   const _FatalErrorApp({required this.message});
   final String message;
@@ -97,45 +110,44 @@ class _FatalErrorApp extends StatelessWidget {
       title: 'Волна',
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: const Color(0xFFFAF6F1),
+        backgroundColor: AppColors.paper,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
                   Icons.cloud_off_rounded,
                   size: 48,
-                  color: Color(0xFFC97B5C),
+                  color: AppColors.accent,
                 ),
-                const SizedBox(height: 16),
-                const Text(
+                const SizedBox(height: AppSpacing.md),
+                Text(
                   'Не получилось запустить',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E2A26),
-                  ),
+                  style: AppTypography.voice(size: 22),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Попробуй обновить страницу. Если не помогает — '
-                  'напиши нам, что случилось.',
+                const SizedBox(height: AppSpacing.smd),
+                Text(
+                  'Попробуй закрыть приложение и открыть заново. '
+                  'Если не помогает — напиши нам, что случилось.',
                   style: TextStyle(
+                    fontFamily: AppTypography.sansFamily,
                     fontSize: 15,
-                    color: Color(0xFF6B6259),
+                    height: 23 / 15,
+                    color: AppColors.inkSoft,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 if (kDebugMode) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     message,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF9A9189),
+                    style: TextStyle(
+                      fontFamily: AppTypography.sansFamily,
+                      fontSize: 13,
+                      color: AppColors.inkQuiet,
                     ),
                     textAlign: TextAlign.center,
                   ),

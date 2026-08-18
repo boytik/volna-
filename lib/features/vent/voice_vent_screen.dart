@@ -855,7 +855,7 @@ class _SuggestionTitle extends StatelessWidget {
     return Text(
       text,
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.terracotta,
+            color: AppColors.accentPress,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.4,
           ),

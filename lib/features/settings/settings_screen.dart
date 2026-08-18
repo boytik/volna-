@@ -264,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   TextStyle? _label(ThemeData theme) => theme.textTheme.bodySmall?.copyWith(
-        color: AppColors.terracotta,
+        color: AppColors.accentPress,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.4,
       );

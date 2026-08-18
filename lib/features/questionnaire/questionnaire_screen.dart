@@ -398,7 +398,7 @@ class _ResultScreen extends StatelessWidget {
   /// Предыдущее прохождение этого же опросника, если оно было.
   final QuestionnaireRecord? previous;
 
-  ({Color color, String emoji, String title, String body}) _zoneCopy(
+  ({Color color, String title, String body}) _zoneCopy(
     QuestionnaireKind kind,
     ResultZone zone,
   ) {
@@ -406,7 +406,6 @@ class _ResultScreen extends StatelessWidget {
       case ResultZone.low:
         return (
           color: AppColors.sageDeep,
-          emoji: '🌿',
           title: 'Базовое равновесие',
           body: 'Ты держишься. Это не значит, что всё легко — это значит, '
               'что внутренние ресурсы пока есть. Продолжай возвращаться к древу.',
@@ -414,7 +413,6 @@ class _ResultScreen extends StatelessWidget {
       case ResultZone.medium:
         return (
           color: AppColors.saffron,
-          emoji: '⚖️',
           title: 'Видны тревожные ноты',
           body: 'Часть нагрузки уже ощущается как тяжесть. '
               'Это сигнал — не приговор. Стоит начать с малого: '
@@ -423,7 +421,6 @@ class _ResultScreen extends StatelessWidget {
       case ResultZone.high:
         return (
           color: AppColors.coral,
-          emoji: '⚠️',
           title: 'Нужна живая помощь',
           body: 'Это уже не «просто устала». '
               'Сейчас тебе нужно не приложение, а человек. '
@@ -472,18 +469,13 @@ class _ResultScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(zone.emoji,
-                            style: const TextStyle(fontSize: 32)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            zone.title,
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                        ),
-                      ],
+                    // Эмодзи-значки зон убраны: DESIGN.md их запрещает,
+                    // а знак предупреждения вводил ещё и семантику
+                    // warning, которой в эмоциональном контуре нет.
+                    // Зону называют цвет рамки и сам заголовок.
+                    Text(
+                      zone.title,
+                      style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 12),
                     Text(zone.body, style: theme.textTheme.bodyLarge),
