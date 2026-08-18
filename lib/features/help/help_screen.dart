@@ -86,24 +86,31 @@ class _HelpScreenState extends State<HelpScreen> {
               ..._prepareSection(context),
               const SizedBox(height: 24),
             ],
-            _SectionTitle('ОНЛАЙН-ПОМОЩЬ', accent: AppColors.marked),
-            const SizedBox(height: 12),
-            ...onlineTherapy.map(
-              (c) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ContactCard(contact: c, accent: AppColors.marked),
+            // Заголовок без содержимого не рисуем: список может
+            // опустеть, когда из него уходит мёртвый адрес, а пустая
+            // рубрика читается как «здесь ничего нет, но должно быть».
+            if (onlineTherapy.isNotEmpty) ...[
+              _SectionTitle('ОНЛАЙН-ПОМОЩЬ', accent: AppColors.marked),
+              const SizedBox(height: 12),
+              ...onlineTherapy.map(
+                (c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _ContactCard(contact: c, accent: AppColors.marked),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            _SectionTitle('БЕСПЛАТНАЯ ПОДДЕРЖКА', accent: AppColors.dawn),
-            const SizedBox(height: 12),
-            ...supportCommunities.map(
-              (c) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ContactCard(contact: c, accent: AppColors.dawn),
+              const SizedBox(height: 24),
+            ],
+            if (supportCommunities.isNotEmpty) ...[
+              _SectionTitle('БЕСПЛАТНАЯ ПОДДЕРЖКА', accent: AppColors.dawn),
+              const SizedBox(height: 12),
+              ...supportCommunities.map(
+                (c) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _ContactCard(contact: c, accent: AppColors.dawn),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ],
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(

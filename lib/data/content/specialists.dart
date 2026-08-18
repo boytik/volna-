@@ -71,12 +71,6 @@ const onlineTherapy = <SpecialistContact>[
     kind: ContactKind.link,
   ),
   SpecialistContact(
-    title: 'Меta (Мета)',
-    description: 'Платформа онлайн-терапии с супервизией.',
-    url: 'https://meta.app',
-    kind: ContactKind.link,
-  ),
-  SpecialistContact(
     title: 'B17',
     description: 'Большой каталог психологов России с возможностью '
         'фильтрации по специализации и городу.',
@@ -85,11 +79,7 @@ const onlineTherapy = <SpecialistContact>[
   ),
 ];
 
-const supportCommunities = <SpecialistContact>[
-  SpecialistContact(
-    title: 'Я Могу',
-    description: 'Анонимные психологи онлайн, бесплатно. Чат и видео.',
-    url: 'https://imozhem.ru',
-    kind: ContactKind.link,
-  ),
-];
+/// Пока пусто: единственная запись, «Я Могу» (imozhem.ru), убрана
+/// 18.08.2026 — у домена нет A-записи, он не существует вовсе.
+/// Экран помощи раздел с пустым списком не рисует.
+const supportCommunities = <SpecialistContact>[];

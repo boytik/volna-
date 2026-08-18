@@ -55,8 +55,8 @@ class AzureChatService {
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
-        debugPrint(
-            'Azure chat ${response.statusCode}: ${response.body}');
+        // Тело не логируем — оно построено на тексте пользователя.
+        debugPrint('Azure chat failed: ${response.statusCode}');
         return null;
       }
 
