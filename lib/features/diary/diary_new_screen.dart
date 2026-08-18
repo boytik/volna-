@@ -34,11 +34,11 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
   Color get _accent {
     switch (widget.kind) {
       case DiaryKind.threeGood:
-        return AppColors.saffron;
+        return AppColors.dawn;
       case DiaryKind.envelope:
-        return AppColors.coral;
+        return AppColors.sos;
       case DiaryKind.friendOnYourPlace:
-        return AppColors.terracotta;
+        return AppColors.accent;
     }
   }
 
@@ -219,7 +219,7 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.peachSoft.withValues(alpha: 0.5),
+                color: AppColors.paperSunk,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Text(
@@ -288,7 +288,7 @@ class _Field extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: AppColors.textMuted,
+              color: AppColors.inkQuiet,
             ),
             filled: true,
             fillColor: AppColors.paperLift,

@@ -79,6 +79,14 @@ void main() {
     );
   });
 
+  test('персик не используется как заливка', () {
+    // DESIGN.md разрешает персик на ≤10% ширины экрана: цвет значка —
+    // да, фон блока — нет. Именно через `withValues` он и растекался
+    // по блокам и подложкам под иконками.
+    final hits = hitLines(RegExp(r'AppColors\.peach\.withValues'));
+    expect(hits, isEmpty, reason: '\n${hits.join('\n')}');
+  });
+
   test('accent не набирается текстом — для текста только accentPress', () {
     // 3.0:1 против 5.0:1. Ловим ту форму, которой акцент и попадал в
     // текст: `...textTheme.bodySmall?.copyWith(color: AppColors.accent`.

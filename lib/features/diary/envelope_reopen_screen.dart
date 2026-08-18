@@ -50,10 +50,10 @@ class EnvelopeReopenScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.peachSoft.withValues(alpha: 0.6),
+                  color: AppColors.paperSunk,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: AppColors.coral.withValues(alpha: 0.4),
+                    color: AppColors.sos.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Column(
@@ -63,14 +63,14 @@ class EnvelopeReopenScreen extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.format_quote_rounded,
-                          color: AppColors.coral,
+                          color: AppColors.sos,
                           size: 18,
                         ),
                         const SizedBox(width: 6),
                         Text(
                           'ТЫ НАПИСАЛА',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppColors.coral,
+                            color: AppColors.sos,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
                           ),
@@ -94,7 +94,7 @@ class EnvelopeReopenScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _ActionTile(
-                accent: AppColors.sageDeep,
+                accent: AppColors.marked,
                 icon: Icons.delete_outline_rounded,
                 title: 'Выбросить',
                 subtitle: 'Эта мысль больше не нужна. Отпустить.',
@@ -116,7 +116,7 @@ class EnvelopeReopenScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               _ActionTile(
-                accent: AppColors.saffron,
+                accent: AppColors.dawn,
                 icon: Icons.schedule_rounded,
                 title: 'Отложить ещё на день',
                 subtitle: 'Пока не готова — пусть подождёт',
@@ -150,7 +150,7 @@ class EnvelopeReopenScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               _ActionTile(
-                accent: AppColors.terracotta,
+                accent: AppColors.accent,
                 icon: Icons.edit_note_rounded,
                 title: 'Переписать',
                 subtitle: 'Записать новую мысль про это',

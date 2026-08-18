@@ -14,17 +14,17 @@ class VentResponseScreen extends StatelessWidget {
   Color get _accent {
     switch (topic) {
       case VentTopic.anger:
-        return AppColors.coral;
+        return AppColors.sos;
       case VentTopic.anxiety:
-        return AppColors.saffron;
+        return AppColors.dawn;
       case VentTopic.exhaustion:
-        return AppColors.sageDeep;
+        return AppColors.marked;
       case VentTopic.guilt:
-        return AppColors.terracotta;
+        return AppColors.accent;
       case VentTopic.sadness:
         return AppColors.peach;
       case VentTopic.general:
-        return AppColors.terracotta;
+        return AppColors.accent;
     }
   }
 
@@ -122,7 +122,7 @@ class VentResponseScreen extends StatelessWidget {
                       const Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 14,
-                        color: AppColors.textMuted,
+                        color: AppColors.inkQuiet,
                       ),
                     ],
                   ),
@@ -152,7 +152,7 @@ class VentResponseScreen extends StatelessWidget {
                     padding: EdgeInsets.only(top: 4),
                     child: Icon(
                       Icons.format_quote_rounded,
-                      color: AppColors.terracotta,
+                      color: AppColors.accent,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -167,7 +167,7 @@ class VentResponseScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Material(
-              color: AppColors.peachSoft.withValues(alpha: 0.5),
+              color: AppColors.paperSunk,
               borderRadius: BorderRadius.circular(AppRadius.sm),
               child: InkWell(
                 onTap: () => context.push('/specialist'),
@@ -178,7 +178,7 @@ class VentResponseScreen extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.support_agent_rounded,
-                        color: AppColors.terracotta,
+                        color: AppColors.accent,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -190,7 +190,7 @@ class VentResponseScreen extends StatelessWidget {
                       const Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 14,
-                        color: AppColors.textMuted,
+                        color: AppColors.inkQuiet,
                       ),
                     ],
                   ),

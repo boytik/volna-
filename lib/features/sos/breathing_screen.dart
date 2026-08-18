@@ -123,7 +123,7 @@ class _BreathingScreenState extends State<BreathingScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.paper,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
@@ -186,13 +186,13 @@ class _BreathingScreenState extends State<BreathingScreen>
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.sage.withValues(alpha: 0.25),
+                color: AppColors.markedWash.withValues(alpha: 0.25),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.check_rounded,
                 size: 64,
-                color: AppColors.sageDeep,
+                color: AppColors.marked,
               ),
             ),
           ),

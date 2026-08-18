@@ -79,7 +79,7 @@ class _DiaryListScreenState extends State<DiaryListScreen>
             const SizedBox(height: 12),
             _NewEntryTile(
               icon: Icons.auto_awesome_rounded,
-              accent: AppColors.saffron,
+              accent: AppColors.dawn,
               title: 'Три хороших события',
               subtitle: 'Что сегодня прошло не ужасно',
               onTap: () => context.push('/diary/new/three-good'),
@@ -87,7 +87,7 @@ class _DiaryListScreenState extends State<DiaryListScreen>
             const SizedBox(height: 8),
             _NewEntryTile(
               icon: Icons.mail_outline_rounded,
-              accent: AppColors.coral,
+              accent: AppColors.sos,
               title: 'Конверт для тревоги',
               subtitle: 'Отложить мысль до завтра',
               onTap: () => context.push('/diary/new/envelope'),
@@ -95,7 +95,7 @@ class _DiaryListScreenState extends State<DiaryListScreen>
             const SizedBox(height: 8),
             _NewEntryTile(
               icon: Icons.favorite_border_rounded,
-              accent: AppColors.terracotta,
+              accent: AppColors.accent,
               title: 'Подруга на твоём месте',
               subtitle: 'Перестроить мысль виноватого',
               onTap: () => context.push('/diary/new/friend'),
@@ -105,7 +105,7 @@ class _DiaryListScreenState extends State<DiaryListScreen>
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.peachSoft.withValues(alpha: 0.5),
+                  color: AppColors.paperSunk,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Text(
@@ -148,7 +148,7 @@ class _ReopenBanner extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: AppColors.coral.withValues(alpha: 0.18),
+      color: AppColors.sos.withValues(alpha: 0.18),
       borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
@@ -157,11 +157,11 @@ class _ReopenBanner extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border.all(color: AppColors.coral, width: 1.2),
+            border: Border.all(color: AppColors.sos, width: 1.2),
           ),
           child: Row(
             children: [
-              const Icon(Icons.mail_rounded, color: AppColors.coral),
+              const Icon(Icons.mail_rounded, color: AppColors.sos),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -184,7 +184,7 @@ class _ReopenBanner extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.terracotta,
+                color: AppColors.accent,
               ),
             ],
           ),
@@ -245,7 +245,7 @@ class _NewEntryTile extends StatelessWidget {
               ),
               const Icon(
                 Icons.add_rounded,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),
@@ -311,13 +311,13 @@ class _EntryCard extends StatelessWidget {
                     const Icon(
                       Icons.lock_rounded,
                       size: 16,
-                      color: AppColors.coral,
+                      color: AppColors.sos,
                     ),
                   if (entry.envelopeStatus == 'discarded')
                     const Icon(
                       Icons.delete_outline_rounded,
                       size: 16,
-                      color: AppColors.textMuted,
+                      color: AppColors.inkQuiet,
                     ),
                   const SizedBox(width: 6),
                   Text(
@@ -331,8 +331,8 @@ class _EntryCard extends StatelessWidget {
                 isSealed ? 'Запечатано до завтра' : preview,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: isSealed
-                      ? AppColors.textMuted
-                      : AppColors.textPrimary,
+                      ? AppColors.inkQuiet
+                      : AppColors.inkBody,
                   fontStyle: isSealed ? FontStyle.italic : FontStyle.normal,
                   height: 1.5,
                 ),

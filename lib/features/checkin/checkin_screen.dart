@@ -43,7 +43,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isMorning = widget.slot == QuestSlot.morning;
-    final accent = isMorning ? AppColors.saffron : AppColors.sageDeep;
+    final accent = isMorning ? AppColors.dawn : AppColors.marked;
 
     return Scaffold(
       body: SafeArea(

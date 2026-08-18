@@ -98,7 +98,7 @@ class _VentScreenState extends State<VentScreen> {
                             'Что внутри сейчас? Пиши как есть — без точек, без формы. '
                             'Например: «опять накричала, чувствую себя дрянью»',
                         hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textMuted,
+                          color: AppColors.inkQuiet,
                           height: 1.5,
                         ),
                         border: InputBorder.none,

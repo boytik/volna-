@@ -38,12 +38,12 @@ class CrisisScreen extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.coral.withValues(alpha: 0.22),
+                color: AppColors.sos.withValues(alpha: 0.22),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.favorite_rounded,
-                color: AppColors.coral,
+                color: AppColors.sos,
                 size: 36,
               ),
             ),
@@ -58,7 +58,7 @@ class CrisisScreen extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => openExternal(context, crisisPhoneUrl),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.coral,
+                backgroundColor: AppColors.sos,
                 minimumSize: const Size.fromHeight(64),
               ),
               icon: const Icon(Icons.phone_in_talk_rounded, size: 28),
@@ -71,7 +71,7 @@ class CrisisScreen extends StatelessWidget {
             const Center(
               child: Text(
                 'Бесплатно, анонимно, круглосуточно',
-                style: TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: AppColors.inkQuiet),
               ),
             ),
             const SizedBox(height: 24),

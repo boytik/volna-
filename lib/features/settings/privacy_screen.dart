@@ -40,7 +40,7 @@ class PrivacyScreen extends StatelessWidget {
             const SizedBox(height: 28),
             const _Block(
               icon: Icons.phone_iphone_rounded,
-              accent: AppColors.sageDeep,
+              accent: AppColors.marked,
               title: 'Остаётся только на телефоне',
               lines: [
                 'Дневник — все три формы, включая конверты',
@@ -54,7 +54,7 @@ class PrivacyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const _Block(
               icon: Icons.cloud_upload_rounded,
-              accent: AppColors.terracotta,
+              accent: AppColors.accent,
               title: 'Уходит в облако — «Выговорись» голосом',
               lines: [
                 'Расшифровка сказанного: по ней составляется ответ',
@@ -76,7 +76,7 @@ class PrivacyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const _Block(
               icon: Icons.delete_outline_rounded,
-              accent: AppColors.coral,
+              accent: AppColors.sos,
               title: 'Можно стереть',
               lines: [
                 'Кнопка «Удалить все мои данные» в настройках',
@@ -88,10 +88,10 @@ class PrivacyScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: AppColors.paper,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
                 border: Border.all(
-                  color: AppColors.textMuted.withValues(alpha: 0.2),
+                  color: AppColors.inkQuiet.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(

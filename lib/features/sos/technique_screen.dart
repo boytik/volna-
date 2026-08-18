@@ -86,7 +86,7 @@ class _TechniqueScreenState extends State<TechniqueScreen> {
           child: LinearProgressIndicator(
             value: (_step + 1) / tech.steps.length,
             minHeight: 5,
-            backgroundColor: AppColors.textMuted.withValues(alpha: 0.18),
+            backgroundColor: AppColors.inkQuiet.withValues(alpha: 0.18),
             valueColor: AlwaysStoppedAnimation(tech.accent),
           ),
         ),
@@ -150,13 +150,13 @@ class _TechniqueScreenState extends State<TechniqueScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.sage.withValues(alpha: 0.25),
+              color: AppColors.markedWash.withValues(alpha: 0.25),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.check_rounded,
               size: 64,
-              color: AppColors.sageDeep,
+              color: AppColors.marked,
             ),
           ),
         ),
@@ -172,7 +172,7 @@ class _TechniqueScreenState extends State<TechniqueScreen> {
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge?.copyWith(
             fontStyle: FontStyle.italic,
-            color: AppColors.textSecondary,
+            color: AppColors.inkSoft,
             height: 1.5,
           ),
         ),
@@ -233,10 +233,10 @@ class _ContraindicationScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.coral.withValues(alpha: 0.16),
+                  color: AppColors.sos.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: AppColors.coral.withValues(alpha: 0.5),
+                    color: AppColors.sos.withValues(alpha: 0.5),
                   ),
                 ),
                 child: Column(
@@ -246,7 +246,7 @@ class _ContraindicationScreen extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.warning_amber_rounded,
-                          color: AppColors.coral,
+                          color: AppColors.sos,
                         ),
                         const SizedBox(width: 8),
                         Text('Важно знать',

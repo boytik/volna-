@@ -92,7 +92,7 @@ class InsightsScreen extends StatelessWidget {
         insights.add(
           _Insight(
             icon: Icons.wb_sunny_rounded,
-            color: AppColors.saffron,
+            color: AppColors.dawn,
             title: 'Утренний шаг связан с лучшим настроением',
             body: 'В дни, когда ты делаешь утренний квест, '
                 'настроение в среднем чуть выше, чем когда пропускаешь. '
@@ -103,7 +103,7 @@ class InsightsScreen extends StatelessWidget {
         insights.add(
           _Insight(
             icon: Icons.nightlight_round,
-            color: AppColors.sageDeep,
+            color: AppColors.marked,
             title: 'Утром тебе важнее не спешить',
             body: 'В дни без утреннего квеста настроение слегка лучше. '
                 'Возможно, тебе нужно больше тишины утром, а не активности.',
@@ -118,7 +118,7 @@ class InsightsScreen extends StatelessWidget {
       insights.add(
         _Insight(
           icon: Icons.favorite_rounded,
-          color: AppColors.terracotta,
+          color: AppColors.accent,
           title: 'Чаще всего помогает: ${topTool.title}',
           body: 'Ты ${toolBoxStorage.countOf(topTool)} раз отметила, '
               'что эта техника помогла. Запомни — она твоя.',
@@ -138,7 +138,7 @@ class InsightsScreen extends StatelessWidget {
       insights.add(
         const _Insight(
           icon: Icons.eco_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'На этой неделе ты приходила часто',
           body: 'Это хорошо. Не сравнивай с прошлой неделей — просто заметь.',
         ),

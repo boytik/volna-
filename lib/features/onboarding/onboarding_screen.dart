@@ -155,7 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           'ничего не хотеть.\n\n'
                           '«Волна» не требует быть супергероем. '
                           'Она просто помогает дышать и замечать тепло.',
-                      accent: AppColors.saffron,
+                      accent: AppColors.dawn,
                     ),
                   ),
                   _reveal(
@@ -168,7 +168,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           '— В любой момент кнопка «Мне тяжело»\n'
                           '— Вечером тихий ритуал\n\n'
                           'Никаких сложных анкет и обязательств.',
-                      accent: AppColors.sage,
+                      accent: AppColors.markedWash,
                     ),
                   ),
                   _reveal(context, 3, const _DataPage()),
@@ -196,7 +196,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       body: 'Сделай три медленных выдоха.\n\n'
                           'Просто почувствуй, как воздух выходит. '
                           'Это уже практика. Это уже шаг.',
-                      accent: AppColors.terracotta,
+                      accent: AppColors.accent,
                     ),
                   ),
                 ],
@@ -220,8 +220,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 3),
                         decoration: BoxDecoration(
                           color: i == _page
-                              ? AppColors.terracotta
-                              : AppColors.textMuted.withValues(alpha: 0.3),
+                              ? AppColors.accent
+                              : AppColors.inkQuiet.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                       ),
@@ -319,7 +319,7 @@ class _DataPage extends StatelessWidget {
           const SizedBox(height: 20),
           const _DataRow(
             icon: Icons.phone_iphone_rounded,
-            accent: AppColors.sageDeep,
+            accent: AppColors.marked,
             title: 'Дневник остаётся на телефоне',
             body: 'Записи, чек-ины, опросники и значки хранятся только на '
                 'этом устройстве. У приложения нет аккаунтов и нет сервера.',
@@ -327,7 +327,7 @@ class _DataPage extends StatelessWidget {
           const SizedBox(height: 14),
           const _DataRow(
             icon: Icons.mic_rounded,
-            accent: AppColors.terracotta,
+            accent: AppColors.accent,
             title: 'Голос — единственное исключение',
             body: 'Чтобы разобрать запись «Выговорись», её нужно отправить '
                 'на расшифровку в облако. Мы спросим отдельно, прежде чем '
@@ -440,7 +440,7 @@ class _AnchorPage extends StatelessWidget {
             (a) => _AnchorTile(
               text: a.text,
               selected: selectedMorning == a.id,
-              accent: AppColors.saffron,
+              accent: AppColors.dawn,
               onTap: () => onSelectMorning(a.id),
             ),
           ),
@@ -451,7 +451,7 @@ class _AnchorPage extends StatelessWidget {
             (a) => _AnchorTile(
               text: a.text,
               selected: selectedEvening == a.id,
-              accent: AppColors.sageDeep,
+              accent: AppColors.marked,
               onTap: () => onSelectEvening(a.id),
             ),
           ),
@@ -507,7 +507,7 @@ class _AnchorTile extends StatelessWidget {
                   selected
                       ? Icons.check_circle_rounded
                       : Icons.circle_outlined,
-                  color: selected ? accent : AppColors.textMuted,
+                  color: selected ? accent : AppColors.inkQuiet,
                   size: 22,
                 ),
                 const SizedBox(width: 12),

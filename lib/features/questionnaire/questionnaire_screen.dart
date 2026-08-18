@@ -141,7 +141,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               value: progress,
               minHeight: 3,
               backgroundColor: AppColors.rule,
-              valueColor: const AlwaysStoppedAnimation(AppColors.terracotta),
+              valueColor: const AlwaysStoppedAnimation(AppColors.accent),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -149,7 +149,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               child: Text(
                 'Вопрос ${_index + 1} · ${q.items.length}'.toUpperCase(),
                 style: theme.textTheme.labelSmall
-                    ?.copyWith(color: AppColors.textMuted),
+                    ?.copyWith(color: AppColors.inkQuiet),
               ),
             ),
             // Каждый вопрос — отдельная «страница». Переход между вопросами —
@@ -261,7 +261,7 @@ class _AnswerOptions extends StatelessWidget {
               child: _BigOption(
                 label: 'Нет',
                 selected: selected == 0,
-                accent: AppColors.sage,
+                accent: AppColors.markedWash,
                 onTap: () => onTap(0),
               ),
             ),
@@ -270,7 +270,7 @@ class _AnswerOptions extends StatelessWidget {
               child: _BigOption(
                 label: 'Да',
                 selected: selected == 1,
-                accent: AppColors.coral,
+                accent: AppColors.sos,
                 onTap: () => onTap(1),
               ),
             ),
@@ -303,7 +303,7 @@ class _ScaleRow extends StatelessWidget {
           padding: EdgeInsets.only(bottom: dense ? 6 : 8),
           child: Material(
             color: isSel
-                ? AppColors.terracotta.withValues(alpha: 0.18)
+                ? AppColors.accent.withValues(alpha: 0.18)
                 : AppColors.paperLift,
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: InkWell(
@@ -317,7 +317,7 @@ class _ScaleRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: isSel ? AppColors.terracotta : AppColors.rule,
+                    color: isSel ? AppColors.accent : AppColors.rule,
                     width: 1.5,
                   ),
                 ),
@@ -328,8 +328,8 @@ class _ScaleRow extends StatelessWidget {
                           ? Icons.check_circle_rounded
                           : Icons.circle_outlined,
                       color: isSel
-                          ? AppColors.terracotta
-                          : AppColors.textMuted,
+                          ? AppColors.accent
+                          : AppColors.inkQuiet,
                       size: 22,
                     ),
                     const SizedBox(width: 12),
@@ -381,7 +381,7 @@ class _BigOption extends StatelessWidget {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
-                color: selected ? accent : AppColors.textPrimary,
+                color: selected ? accent : AppColors.inkBody,
               ),
             ),
           ),
@@ -405,14 +405,14 @@ class _ResultScreen extends StatelessWidget {
     switch (zone) {
       case ResultZone.low:
         return (
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Базовое равновесие',
           body: 'Ты держишься. Это не значит, что всё легко — это значит, '
               'что внутренние ресурсы пока есть. Продолжай возвращаться к древу.',
         );
       case ResultZone.medium:
         return (
-          color: AppColors.saffron,
+          color: AppColors.dawn,
           title: 'Видны тревожные ноты',
           body: 'Часть нагрузки уже ощущается как тяжесть. '
               'Это сигнал — не приговор. Стоит начать с малого: '
@@ -420,7 +420,7 @@ class _ResultScreen extends StatelessWidget {
         );
       case ResultZone.high:
         return (
-          color: AppColors.coral,
+          color: AppColors.sos,
           title: 'Нужна живая помощь',
           body: 'Это уже не «просто устала». '
               'Сейчас тебе нужно не приложение, а человек. '
@@ -494,10 +494,10 @@ class _ResultScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.cream,
+                  color: AppColors.paper,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: AppColors.textMuted.withValues(alpha: 0.2),
+                    color: AppColors.inkQuiet.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Text(
@@ -522,7 +522,7 @@ class _ResultScreen extends StatelessWidget {
   List<Widget> _highZoneActions(BuildContext context) => [
         _ActionButton(
           icon: Icons.phone_in_talk_rounded,
-          color: AppColors.coral,
+          color: AppColors.sos,
           title: 'Позвонить на телефон доверия',
           subtitle: '$crisisPhoneLabel · бесплатно, анонимно',
           onTap: () => openExternal(context, crisisPhoneUrl),
@@ -530,7 +530,7 @@ class _ResultScreen extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionButton(
           icon: Icons.note_alt_rounded,
-          color: AppColors.terracotta,
+          color: AppColors.accent,
           title: 'Подготовиться к встрече с психологом',
           subtitle: '3 коротких вопроса — и ничего не забудешь',
           onTap: () {
@@ -540,7 +540,7 @@ class _ResultScreen extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionButton(
           icon: Icons.menu_book_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Найти онлайн-психолога',
           subtitle: 'Каталоги проверенных сервисов',
           onTap: () {
@@ -552,7 +552,7 @@ class _ResultScreen extends StatelessWidget {
   List<Widget> _mediumZoneActions(BuildContext context) => [
         _ActionButton(
           icon: Icons.favorite_rounded,
-          color: AppColors.saffron,
+          color: AppColors.dawn,
           title: 'Открыть фразы поддержки',
           subtitle: 'Что почитать сейчас',
           onTap: () {
@@ -562,7 +562,7 @@ class _ResultScreen extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionButton(
           icon: Icons.air_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Сделать одну SOS-технику',
           subtitle: 'Дыхание, заземление, ладонь на сердце',
           onTap: () {
@@ -574,7 +574,7 @@ class _ResultScreen extends StatelessWidget {
   List<Widget> _lowZoneActions(BuildContext context) => [
         _ActionButton(
           icon: Icons.eco_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Вернуться к древу',
           subtitle: 'Продолжай в своём ритме',
           onTap: () {
@@ -604,17 +604,17 @@ class _ComparisonCard extends StatelessWidget {
     final (IconData icon, Color color, String text) = switch (delta) {
       < -_noise => (
           Icons.trending_down_rounded,
-          AppColors.sageDeep,
+          AppColors.marked,
           'Стало легче, чем в прошлый раз',
         ),
       > _noise => (
           Icons.trending_up_rounded,
-          AppColors.coral,
+          AppColors.sos,
           'Тяжелее, чем в прошлый раз',
         ),
       _ => (
           Icons.trending_flat_rounded,
-          AppColors.textSecondary,
+          AppColors.inkSoft,
           'Примерно так же, как в прошлый раз',
         ),
     };
@@ -709,7 +709,7 @@ class _ActionButton extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),

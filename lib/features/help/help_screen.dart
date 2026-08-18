@@ -86,28 +86,28 @@ class _HelpScreenState extends State<HelpScreen> {
               ..._prepareSection(context),
               const SizedBox(height: 24),
             ],
-            _SectionTitle('ОНЛАЙН-ПОМОЩЬ', accent: AppColors.sageDeep),
+            _SectionTitle('ОНЛАЙН-ПОМОЩЬ', accent: AppColors.marked),
             const SizedBox(height: 12),
             ...onlineTherapy.map(
               (c) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _ContactCard(contact: c, accent: AppColors.sageDeep),
+                child: _ContactCard(contact: c, accent: AppColors.marked),
               ),
             ),
             const SizedBox(height: 24),
-            _SectionTitle('БЕСПЛАТНАЯ ПОДДЕРЖКА', accent: AppColors.saffron),
+            _SectionTitle('БЕСПЛАТНАЯ ПОДДЕРЖКА', accent: AppColors.dawn),
             const SizedBox(height: 12),
             ...supportCommunities.map(
               (c) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _ContactCard(contact: c, accent: AppColors.saffron),
+                child: _ContactCard(contact: c, accent: AppColors.dawn),
               ),
             ),
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.peachSoft.withValues(alpha: 0.5),
+                color: AppColors.paperSunk,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Column(
@@ -118,7 +118,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       const Icon(
                         Icons.info_outline_rounded,
                         size: 18,
-                        color: AppColors.terracotta,
+                        color: AppColors.accent,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -147,18 +147,18 @@ class _HelpScreenState extends State<HelpScreen> {
 /// Телефоны доверия. Отдельным методом, потому что этот блок меняет
 /// место в зависимости от того, как открыли экран.
 List<Widget> _emergencySection() => [
-      _SectionTitle('СРОЧНО, СЕЙЧАС', accent: AppColors.coral),
+      _SectionTitle('СРОЧНО, СЕЙЧАС', accent: AppColors.sos),
       const SizedBox(height: 12),
       ...emergencyContacts.map(
         (c) => Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _ContactCard(contact: c, accent: AppColors.coral),
+          child: _ContactCard(contact: c, accent: AppColors.sos),
         ),
       ),
     ];
 
 List<Widget> _prepareSection(BuildContext context) => [
-      _SectionTitle('ПОДГОТОВИТЬСЯ К ВСТРЕЧЕ', accent: AppColors.terracotta),
+      _SectionTitle('ПОДГОТОВИТЬСЯ К ВСТРЕЧЕ', accent: AppColors.accent),
       const SizedBox(height: 12),
       _PrepareForSessionCard(onTap: () => context.push('/help/prepare')),
     ];
@@ -242,7 +242,7 @@ class _ContactCard extends StatelessWidget {
                         contact.note!,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontStyle: FontStyle.italic,
-                          color: AppColors.textSecondary,
+                          color: AppColors.inkSoft,
                         ),
                       ),
                     ],
@@ -266,7 +266,7 @@ class _PrepareForSessionCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: AppColors.peachSoft.withValues(alpha: 0.7),
+      color: AppColors.paperSunk,
       borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
@@ -279,7 +279,7 @@ class _PrepareForSessionCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: const BoxDecoration(
-                  color: AppColors.terracotta,
+                  color: AppColors.accent,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -309,7 +309,7 @@ class _PrepareForSessionCard extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),

@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.coral),
+            style: TextButton.styleFrom(foregroundColor: AppColors.sos),
             child: const Text('Удалить всё'),
           ),
         ],
@@ -134,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _AnchorList(
                       options: morningAnchors,
                       selected: _morning,
-                      accent: AppColors.saffron,
+                      accent: AppColors.dawn,
                       onTap: (id) async {
                         setState(() => _morning = _morning == id ? null : id);
                         await _apply();
@@ -144,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Во сколько напомнить утром',
                       hour: _morningHour,
                       defaultHour: 8,
-                      accent: AppColors.saffron,
+                      accent: AppColors.dawn,
                       onPick: (h) async {
                         setState(() => _morningHour = h);
                         await settingsStorage.setMorningHour(h);
@@ -157,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _AnchorList(
                       options: eveningAnchors,
                       selected: _evening,
-                      accent: AppColors.sageDeep,
+                      accent: AppColors.marked,
                       onTap: (id) async {
                         setState(() => _evening = _evening == id ? null : id);
                         await _apply();
@@ -167,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Во сколько напомнить вечером',
                       hour: _eveningHour,
                       defaultHour: 21,
-                      accent: AppColors.sageDeep,
+                      accent: AppColors.marked,
                       onPick: (h) async {
                         setState(() => _eveningHour = h);
                         await settingsStorage.setEveningHour(h);
@@ -223,14 +223,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   _LinkRow(
                     icon: Icons.shield_outlined,
-                    accent: AppColors.sageDeep,
+                    accent: AppColors.marked,
                     title: 'Что происходит с данными',
                     subtitle: 'Коротко и без юридического языка',
                     onTap: () => context.push('/privacy'),
                   ),
                   _LinkRow(
                     icon: Icons.delete_outline_rounded,
-                    accent: AppColors.coral,
+                    accent: AppColors.sos,
                     title: 'Удалить все мои данные',
                     subtitle: 'Стереть всё с этого телефона, без возврата',
                     onTap: _confirmWipe,
@@ -244,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'Короткие шкалы — свериться с собой, когда захочется.',
               child: _LinkRow(
                 icon: Icons.fact_check_outlined,
-                accent: AppColors.sageDeep,
+                accent: AppColors.marked,
                 title: 'Пройти опросник',
                 subtitle: 'PSS, PBI, CSI — когда захочется',
                 onTap: () => context.push('/questionnaire'),
@@ -362,7 +362,7 @@ class _LinkRow extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),
@@ -456,7 +456,7 @@ class _AnchorList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Material(
-            color: isSel ? accent.withValues(alpha: 0.18) : AppColors.cream,
+            color: isSel ? accent.withValues(alpha: 0.18) : AppColors.paper,
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: InkWell(
               onTap: () => onTap(a.id),
@@ -473,7 +473,7 @@ class _AnchorList extends StatelessWidget {
                   children: [
                     Icon(
                       isSel ? Icons.check_circle_rounded : Icons.circle_outlined,
-                      color: isSel ? accent : AppColors.textMuted,
+                      color: isSel ? accent : AppColors.inkQuiet,
                       size: 20,
                     ),
                     const SizedBox(width: 12),

@@ -39,7 +39,7 @@ class QuestionnaireListScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.peachSoft.withValues(alpha: 0.5),
+                color: AppColors.paperSunk,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Row(
@@ -47,7 +47,7 @@ class QuestionnaireListScreen extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.shield_rounded,
-                    color: AppColors.terracotta,
+                    color: AppColors.accent,
                     size: 20,
                   ),
                   const SizedBox(width: 10),
@@ -62,11 +62,11 @@ class QuestionnaireListScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            ..._tile(context, QuestionnaireKind.csi, AppColors.sageDeep),
+            ..._tile(context, QuestionnaireKind.csi, AppColors.marked),
             const SizedBox(height: 12),
-            ..._tile(context, QuestionnaireKind.pss, AppColors.saffron),
+            ..._tile(context, QuestionnaireKind.pss, AppColors.dawn),
             const SizedBox(height: 12),
-            ..._tile(context, QuestionnaireKind.pbi, AppColors.terracotta),
+            ..._tile(context, QuestionnaireKind.pbi, AppColors.accent),
           ],
         ),
       ),
@@ -121,7 +121,7 @@ class QuestionnaireListScreen extends StatelessWidget {
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: AppColors.textMuted,
+                  color: AppColors.inkQuiet,
                 ),
               ],
             ),

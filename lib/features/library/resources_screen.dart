@@ -104,13 +104,13 @@ class _ResourceCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: (isPhone ? AppColors.coral : AppColors.sage)
+                  color: (isPhone ? AppColors.sos : AppColors.markedWash)
                       .withValues(alpha: 0.22),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   isPhone ? Icons.phone_rounded : Icons.link_rounded,
-                  color: isPhone ? AppColors.coral : AppColors.sageDeep,
+                  color: isPhone ? AppColors.sos : AppColors.marked,
                   size: 22,
                 ),
               ),
