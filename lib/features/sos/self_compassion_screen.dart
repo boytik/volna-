@@ -76,13 +76,13 @@ class _SelfCompassionScreenState extends State<SelfCompassionScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.peach.withValues(alpha: 0.4),
+              color: AppColors.paperSunk,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.favorite_rounded,
               size: 48,
-              color: AppColors.terracotta,
+              color: AppColors.accent,
             ),
           ),
         ),
@@ -102,7 +102,7 @@ class _SelfCompassionScreenState extends State<SelfCompassionScreen> {
         FilledButton(
           onPressed: () => setState(() => _index++),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.terracotta,
+            backgroundColor: AppColors.accent,
           ),
           child: Text(isLast ? 'Готово' : 'Дальше'),
         ),
@@ -120,13 +120,13 @@ class _SelfCompassionScreenState extends State<SelfCompassionScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.peach.withValues(alpha: 0.4),
+              color: AppColors.paperSunk,
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.favorite_rounded,
               size: 64,
-              color: AppColors.terracotta,
+              color: AppColors.accent,
             ),
           ),
         ),

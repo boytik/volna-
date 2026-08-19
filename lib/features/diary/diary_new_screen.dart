@@ -34,11 +34,11 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
   Color get _accent {
     switch (widget.kind) {
       case DiaryKind.threeGood:
-        return AppColors.saffron;
+        return AppColors.dawn;
       case DiaryKind.envelope:
-        return AppColors.coral;
+        return AppColors.sos;
       case DiaryKind.friendOnYourPlace:
-        return AppColors.terracotta;
+        return AppColors.accent;
     }
   }
 
@@ -73,9 +73,16 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
       entry.envelopeStatus = 'sealed';
       final at = DateTime.now().add(const Duration(days: 1));
       entry.envelopeReopenAt = at;
-      final notifId = await notificationService.scheduleEnvelopeReopen(
-        after: const Duration(days: 1),
-      );
+      // Конверт обещает вернуть мысль завтра — без разрешения на уведомления
+      // iOS тихо не покажет напоминание, а человек будет ждать. Спрашиваем
+      // контекстно, ровно в этот момент. Не дали — конверт всё равно
+      // запечатываем, просто без пуша (notifId == -1 → null).
+      final granted = await notificationService.requestPermission();
+      final notifId = granted
+          ? await notificationService.scheduleEnvelopeReopen(
+              after: const Duration(days: 1),
+            )
+          : -1;
       entry.envelopeNotificationId = notifId == -1 ? null : notifId;
     }
 
@@ -212,7 +219,7 @@ class _DiaryNewScreenState extends State<DiaryNewScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.peachSoft.withValues(alpha: 0.5),
+                color: AppColors.paperSunk,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Text(
@@ -281,7 +288,7 @@ class _Field extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: AppColors.textMuted,
+              color: AppColors.inkQuiet,
             ),
             filled: true,
             fillColor: AppColors.paperLift,

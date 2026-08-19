@@ -68,18 +68,18 @@ class _CategoryTile extends StatelessWidget {
   final VoidCallback onTap;
 
   static const _accents = {
-    'resilience': AppColors.sageDeep,
-    'burnout': AppColors.terracotta,
+    'resilience': AppColors.marked,
+    'burnout': AppColors.accent,
     'guilt': AppColors.peach,
-    'anxiety': AppColors.coral,
-    'affirmations': AppColors.saffron,
-    'support': AppColors.sage,
+    'anxiety': AppColors.sos,
+    'affirmations': AppColors.dawn,
+    'support': AppColors.markedWash,
   };
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = _accents[category.id] ?? AppColors.terracotta;
+    final accent = _accents[category.id] ?? AppColors.accent;
 
     return Material(
       color: AppColors.paperLift,
@@ -118,7 +118,7 @@ class _CategoryTile extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),
@@ -137,7 +137,7 @@ class _ResourcesTile extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: AppColors.peachSoft,
+      color: AppColors.paperSunk,
       borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
@@ -155,7 +155,7 @@ class _ResourcesTile extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.menu_book_rounded,
-                  color: AppColors.terracotta,
+                  color: AppColors.accent,
                 ),
               ),
               const SizedBox(width: 16),
@@ -178,7 +178,7 @@ class _ResourcesTile extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),

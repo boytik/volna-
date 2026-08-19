@@ -40,7 +40,7 @@ class PrivacyScreen extends StatelessWidget {
             const SizedBox(height: 28),
             const _Block(
               icon: Icons.phone_iphone_rounded,
-              accent: AppColors.sageDeep,
+              accent: AppColors.marked,
               title: 'Остаётся только на телефоне',
               lines: [
                 'Дневник — все три формы, включая конверты',
@@ -54,24 +54,29 @@ class PrivacyScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const _Block(
               icon: Icons.cloud_upload_rounded,
-              accent: AppColors.terracotta,
-              title: 'Уходит в облако — только голос',
+              accent: AppColors.accent,
+              title: 'Уходит в облако — «Выговорись» голосом',
               lines: [
-                'Аудиозапись «Выговорись» и её расшифровка',
-                'Отправляются в Azure OpenAI (Microsoft) — там их превращают '
-                    'в текст и составляют ответ',
+                'Расшифровка сказанного: по ней составляется ответ',
+                'Сама запись — только если этот телефон не умеет '
+                    'распознавать речь без интернета. Если умеет, аудио '
+                    'не покидает устройство, и файла записи не возникает '
+                    'вовсе',
+                'Адресат — Azure OpenAI (Microsoft)',
               ],
-              footer: 'Microsoft может хранить эти запросы до 30 дней для '
+              footer: 'Что именно уйдёт с твоего телефона, написано прямо '
+                  'на экране записи — до того, как ты начнёшь говорить. '
+                  'Microsoft может хранить эти запросы до 30 дней для '
                   'защиты от злоупотреблений. Мы не связываем их с тобой: '
                   'ни имени, ни телефона, ни аккаунта приложение не собирает. '
                   'Голосовая функция включается только с твоего явного '
-                  'согласия и выключается в настройках в любой момент. '
+                  'согласия, и это согласие можно снять в настройках. '
                   'Текстовое «Выговорись» работает полностью на телефоне.',
             ),
             const SizedBox(height: 16),
             const _Block(
               icon: Icons.delete_outline_rounded,
-              accent: AppColors.coral,
+              accent: AppColors.sos,
               title: 'Можно стереть',
               lines: [
                 'Кнопка «Удалить все мои данные» в настройках',
@@ -83,10 +88,10 @@ class PrivacyScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: AppColors.paper,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
                 border: Border.all(
-                  color: AppColors.textMuted.withValues(alpha: 0.2),
+                  color: AppColors.inkQuiet.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(

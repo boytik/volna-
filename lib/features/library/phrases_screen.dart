@@ -87,7 +87,7 @@ class _PhraseCard extends StatelessWidget {
                 padding: EdgeInsets.only(top: 4),
                 child: Icon(
                   Icons.format_quote_rounded,
-                  color: AppColors.terracotta,
+                  color: AppColors.accent,
                   size: 20,
                 ),
               ),

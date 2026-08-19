@@ -106,6 +106,20 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   // ---------------------- Запись ----------------------
 
   Future<void> _startRecording() async {
+    // Проверяем облако ДО записи — на обоих путях. Раньше проверка
+    // стояла только в облачной ветке, и человек с локальным
+    // распознаванием говорил 90 секунд, читал расшифровку, жал
+    // «отправить» и только там узнавал, что зря: ответ всё равно
+    // приходит из Azure, аудио там или только текст.
+    if (!cloudVoiceEnabled || azureOpenAiApiKey.isEmpty) {
+      setState(() {
+        _stage = _Stage.error;
+        _errorMessage = 'Разбор голоса сейчас недоступен. '
+            'Можно написать текстом — это работает без облака.';
+      });
+      return;
+    }
+
     if (_useOnDevice) return _startOnDevice();
     return _startCloudRecording();
   }
@@ -187,17 +201,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
   }
 
   Future<void> _startCloudRecording() async {
-    // Проверяем облако ДО записи. Раньше проверка стояла после stop(),
-    // и человек сначала говорил 90 секунд, а потом узнавал, что зря.
-    if (!cloudVoiceEnabled || azureOpenAiApiKey.isEmpty) {
-      setState(() {
-        _stage = _Stage.error;
-        _errorMessage = 'Разбор голоса сейчас недоступен. '
-            'Можно написать текстом — это работает без облака.';
-      });
-      return;
-    }
-
+    // Доступность облака уже проверена в _startRecording.
     final allowed = await _recorder.hasPermission();
     if (!mounted) return;
     if (!allowed) {
@@ -248,6 +252,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
     final text = await _transcribe.transcribe(
       bytes: bytes,
       webBlobUrl: webUrl,
+      filename: _recorder.uploadFilename,
     );
 
     if (!mounted) return;
@@ -592,7 +597,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
           height: 48,
           child: CircularProgressIndicator(
             strokeWidth: 3,
-            color: AppColors.terracotta,
+            color: AppColors.accent,
           ),
         ),
         const SizedBox(height: 24),
@@ -626,7 +631,7 @@ class _VoiceVentScreenState extends State<VoiceVentScreen> {
         const Icon(
           Icons.cloud_off_rounded,
           size: 48,
-          color: AppColors.coral,
+          color: AppColors.sos,
         ),
         const SizedBox(height: 16),
         Text(
@@ -720,7 +725,7 @@ class _AmplitudeBars extends StatelessWidget {
                 width: 14,
                 height: h.clamp(20, 110),
                 decoration: BoxDecoration(
-                  color: AppColors.terracotta,
+                  color: AppColors.accent,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
               ),
@@ -759,10 +764,10 @@ class _ResponseView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.peachSoft.withValues(alpha: 0.6),
+            color: AppColors.paperSunk,
             borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(
-              color: AppColors.terracotta.withValues(alpha: 0.3),
+              color: AppColors.accent.withValues(alpha: 0.3),
             ),
           ),
           child: Column(
@@ -800,7 +805,7 @@ class _ResponseView extends StatelessWidget {
         ],
         const SizedBox(height: 24),
         Material(
-          color: AppColors.sage.withValues(alpha: 0.18),
+          color: AppColors.markedWash.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(AppRadius.sm),
           child: InkWell(
             onTap: () => context.push('/specialist'),
@@ -811,7 +816,7 @@ class _ResponseView extends StatelessWidget {
                 children: [
                   const Icon(
                     Icons.support_agent_rounded,
-                    color: AppColors.sageDeep,
+                    color: AppColors.marked,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -823,7 +828,7 @@ class _ResponseView extends StatelessWidget {
                   const Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 14,
-                    color: AppColors.textMuted,
+                    color: AppColors.inkQuiet,
                   ),
                 ],
               ),
@@ -851,7 +856,7 @@ class _SuggestionTitle extends StatelessWidget {
     return Text(
       text,
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.terracotta,
+            color: AppColors.accentPress,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.4,
           ),
@@ -906,7 +911,7 @@ class _TechniqueLink extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),
@@ -937,7 +942,7 @@ class _PhraseCard extends StatelessWidget {
             padding: EdgeInsets.only(top: 4),
             child: Icon(
               Icons.format_quote_rounded,
-              color: AppColors.terracotta,
+              color: AppColors.accent,
             ),
           ),
           const SizedBox(width: 12),
@@ -964,7 +969,7 @@ class _QuestionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.peachSoft.withValues(alpha: 0.5),
+        color: AppColors.paperSunk,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Row(
@@ -974,7 +979,7 @@ class _QuestionCard extends StatelessWidget {
             padding: EdgeInsets.only(top: 4),
             child: Icon(
               Icons.help_outline_rounded,
-              color: AppColors.terracotta,
+              color: AppColors.accent,
             ),
           ),
           const SizedBox(width: 12),

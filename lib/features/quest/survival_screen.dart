@@ -26,7 +26,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
     final q = survivalFor(widget.slot);
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppColors.paper,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
@@ -43,7 +43,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
               Text(
                 'РЕЖИМ ВЫЖИВАНИЯ',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.coral,
+                  color: AppColors.sos,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
                 ),
@@ -77,7 +77,7 @@ class _SurvivalScreenState extends State<SurvivalScreen> {
                     setState(() => _done = true);
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.terracotta,
+                    backgroundColor: AppColors.accent,
                   ),
                   child: const Text('Сделала'),
                 )

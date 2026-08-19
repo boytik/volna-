@@ -3,10 +3,20 @@
          permanentlyDenied и запись не стартует вообще. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
 
+    <!-- Azure OpenAI — единственное, ради чего приложению нужна сеть.
+         Шрифты раньше тоже качались в рантайме через google_fonts;
+         теперь они вшиты в assets, и сеть за пределами «Выговорись»
+         не используется вовсе. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <!-- Локальные напоминания. POST_NOTIFICATIONS обязателен с Android 13. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- SCHEDULE_EXACT_ALARM оставляем: на Android 12 даёт точный будильник,
+         на 13+ без явной выдачи NotificationService молча откатывается на
+         неточный режим (точность до минуты для напоминаний не нужна).
+         USE_EXACT_ALARM убрали: Google Play разрешает его только будильникам
+         и календарям — для приложения-напоминалки это риск отклонения. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
@@ -62,6 +72,17 @@
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
+        </intent>
+
+        <!-- Без этой записи package visibility (Android 11+) прячет от
+             приложения движок распознавания речи: speech_to_text его не
+             находит, initialize() возвращает false, и локальный путь
+             «выговориться» не поднимается вовсе.
+             Цена ошибки здесь не в неудобстве: человек уезжает в облако
+             с телефона, который умеет распознавать сам, — то есть аудио
+             покидает устройство без нужды. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

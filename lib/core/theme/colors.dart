@@ -80,48 +80,15 @@ class AppColors {
   static const nightInkQuiet = Color(0xFF8A8073);
   static const nightAccent = Color(0xFFE09A78);
 
-  // ─── Устаревшее ───────────────────────────────────────────
-  // Экраны мигрируют на новые имена постепенно. Значения совпадают
-  // с новыми токенами, кроме отмеченных.
-
-  @Deprecated('Используй AppColors.paper')
-  static const cream = paper;
-
-  @Deprecated('Используй AppColors.paperSunk')
-  static const creamDeep = paperSunk;
-
-  /// Персик снят с ролей заливки — был главным источником «сладости».
-  /// Допустим только на ≤10% ширины экрана.
-  @Deprecated('Персик больше не заливка. Используй paperSunk или dawnWash')
+  // ─── Персик ───────────────────────────────────────────────
+  /// Единственный остаток прежней палитры.
+  ///
+  /// Был главным источником «сладости», и с ролей **заливки** снят: ни
+  /// фонов блоков, ни подложек под иконками. Остался как цвет значка —
+  /// бейджа, техники, темы в библиотеке, — то есть на площади, которую
+  /// DESIGN.md ограничивает 10% ширины экрана.
+  ///
+  /// Заливки, которые тут были, ушли в [paperSunk]. `peachSoft` удалён
+  /// вовсе: у него не было ролей, кроме заливочных.
   static const peach = Color(0xFFF5C9A6);
-
-  @Deprecated('Персик больше не заливка. Используй paperSunk или dawnWash')
-  static const peachSoft = Color(0xFFFADDC2);
-
-  @Deprecated('Используй AppColors.accent (заливки) или accentPress (текст)')
-  static const terracotta = accent;
-
-  @Deprecated('Используй AppColors.accentPress')
-  static const terracottaDeep = accentPress;
-
-  @Deprecated('Используй AppColors.markedWash')
-  static const sage = markedWash;
-
-  @Deprecated('Используй AppColors.marked')
-  static const sageDeep = marked;
-
-  @Deprecated('Шафран теперь освещение: AppColors.dawnWash')
-  static const saffron = dawn;
-
-  @Deprecated('Используй AppColors.sos')
-  static const coral = sos;
-
-  @Deprecated('Используй AppColors.inkBody')
-  static const textPrimary = inkBody;
-
-  @Deprecated('Используй AppColors.inkSoft')
-  static const textSecondary = inkSoft;
-
-  @Deprecated('Используй AppColors.inkQuiet')
-  static const textMuted = inkQuiet;
 }

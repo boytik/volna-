@@ -48,8 +48,11 @@ class AzureTranscribeService {
           await request.send().timeout(const Duration(seconds: 30));
       final response = await http.Response.fromStream(streamed);
       if (response.statusCode != 200) {
-        debugPrint(
-            'Azure transcribe ${response.statusCode}: ${response.body}');
+        // Тело ответа в лог не пишем: у транскрибации в нём лежит
+        // то, что человек сказал. Кода статуса хватает, чтобы понять,
+        // что сломалось, — а расшифровка в логах устройства это ровно
+        // то, чего раздел обещает не делать.
+        debugPrint('Azure transcribe failed: ${response.statusCode}');
         return null;
       }
       final body = utf8.decode(response.bodyBytes);

@@ -63,10 +63,10 @@ class _GroundingScreenState extends State<GroundingScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.saffron.withValues(alpha: 0.2),
+              color: AppColors.dawn.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(step.icon, size: 48, color: AppColors.saffron),
+            child: Icon(step.icon, size: 48, color: AppColors.dawn),
           ),
         ),
         const SizedBox(height: 32),
@@ -80,14 +80,14 @@ class _GroundingScreenState extends State<GroundingScreen> {
           step.hint,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: AppColors.textSecondary,
+            color: AppColors.inkSoft,
           ),
         ),
         const Spacer(),
         FilledButton(
           onPressed: () => setState(() => _index++),
           style: FilledButton.styleFrom(
-            backgroundColor: AppColors.saffron,
+            backgroundColor: AppColors.dawn,
           ),
           child: Text(isLast ? 'Готово' : 'Дальше'),
         ),
@@ -105,13 +105,13 @@ class _GroundingScreenState extends State<GroundingScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.sage.withValues(alpha: 0.25),
+              color: AppColors.markedWash.withValues(alpha: 0.25),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.check_rounded,
               size: 64,
-              color: AppColors.sageDeep,
+              color: AppColors.marked,
             ),
           ),
         ),

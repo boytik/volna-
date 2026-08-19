@@ -91,7 +91,7 @@ const _existingBreathing = SosTechnique(
   steps: [],
   afterPhrase: 'Ты вернулась к дыханию — это уже регуляция.',
   icon: Icons.air_rounded,
-  accent: AppColors.sage,
+  accent: AppColors.markedWash,
   routeOverride: '/sos/breathing',
 );
 
@@ -105,7 +105,7 @@ const _existingGrounding = SosTechnique(
   steps: [],
   afterPhrase: 'Ты — здесь, на земле, в своём теле.',
   icon: Icons.touch_app_rounded,
-  accent: AppColors.saffron,
+  accent: AppColors.dawn,
   routeOverride: '/sos/grounding',
 );
 
@@ -156,7 +156,7 @@ const physiologicalSigh = SosTechnique(
   afterPhrase: 'Ты сделала самое исследованное упражнение от паники в мире. '
       'И оно работает.',
   icon: Icons.air_outlined,
-  accent: AppColors.sage,
+  accent: AppColors.markedWash,
 );
 
 const extendedExhale = SosTechnique(
@@ -184,7 +184,7 @@ const extendedExhale = SosTechnique(
   ],
   afterPhrase: 'Это самый безопасный способ снизить кортизол. Без побочных.',
   icon: Icons.waves_rounded,
-  accent: AppColors.sageDeep,
+  accent: AppColors.marked,
 );
 
 const microMovements = SosTechnique(
@@ -247,7 +247,7 @@ const nameAndFact = SosTechnique(
   ],
   afterPhrase: 'Ты не сдержала боль — ты выбрала, как с ней быть.',
   icon: Icons.record_voice_over_rounded,
-  accent: AppColors.coral,
+  accent: AppColors.sos,
 );
 
 const detective = SosTechnique(
@@ -275,7 +275,7 @@ const detective = SosTechnique(
   ],
   afterPhrase: 'Ты загрузила зрительную кору — тревожная петля прервалась.',
   icon: Icons.search_rounded,
-  accent: AppColors.saffron,
+  accent: AppColors.dawn,
 );
 
 // ──────────────── Из ресёрча клинических источников ────────────────
@@ -348,7 +348,7 @@ const coldWater = SosTechnique(
   afterPhrase: 'Это «нырковый рефлекс» — твоё тело замедляет сердце автоматически. '
       'Это не «успокоиться» — это физиология.',
   icon: Icons.ac_unit_rounded,
-  accent: AppColors.sage,
+  accent: AppColors.markedWash,
   contraindication: 'Не используй при сердечных аритмиях, '
       'если есть проблемы с сердечно-сосудистой системой, '
       'или при истории расстройств пищевого поведения. '
@@ -386,7 +386,7 @@ const intenseMovement = SosTechnique(
   afterPhrase: 'Ты сожгла адреналин. Это не «избавилась от чувств» — '
       'это завершила цикл стресса (Нагоски). Тело может теперь восстановиться.',
   icon: Icons.directions_run_rounded,
-  accent: AppColors.coral,
+  accent: AppColors.sos,
 );
 
 /// Все техники в одном списке.

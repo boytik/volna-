@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.coral),
+            style: TextButton.styleFrom(foregroundColor: AppColors.sos),
             child: const Text('Удалить всё'),
           ),
         ],
@@ -134,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _AnchorList(
                       options: morningAnchors,
                       selected: _morning,
-                      accent: AppColors.saffron,
+                      accent: AppColors.dawn,
                       onTap: (id) async {
                         setState(() => _morning = _morning == id ? null : id);
                         await _apply();
@@ -144,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Во сколько напомнить утром',
                       hour: _morningHour,
                       defaultHour: 8,
-                      accent: AppColors.saffron,
+                      accent: AppColors.dawn,
                       onPick: (h) async {
                         setState(() => _morningHour = h);
                         await settingsStorage.setMorningHour(h);
@@ -157,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _AnchorList(
                       options: eveningAnchors,
                       selected: _evening,
-                      accent: AppColors.sageDeep,
+                      accent: AppColors.marked,
                       onTap: (id) async {
                         setState(() => _evening = _evening == id ? null : id);
                         await _apply();
@@ -167,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Во сколько напомнить вечером',
                       hour: _eveningHour,
                       defaultHour: 21,
-                      accent: AppColors.sageDeep,
+                      accent: AppColors.marked,
                       onPick: (h) async {
                         setState(() => _eveningHour = h);
                         await settingsStorage.setEveningHour(h);
@@ -194,10 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Включить режим выживания'),
               ),
             ),
-            // Секции «Дополнительно» здесь больше нет. Календарь,
-            // инсайты и опросники переехали в «Ещё»: это рефлексия и
-            // самооценка, а не конфигурация приложения. Под шестерёнкой
-            // их никто не искал.
+            // Календарь и «что я заметила» живут в «Пути» — это рефлексия,
+            // а не конфигурация. Опросники по просьбе заказчицы вернули сюда
+            // (секция ниже): их удобнее находить под шестерёнкой.
             const SizedBox(height: 24),
             _Section(
               title: 'Данные',
@@ -213,25 +212,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       await settingsStorage.setCloudVoiceConsent(v);
                     },
                     title: const Text('Разбирать голос через облако'),
+                    // Тумблер хранит согласие, а не запрет: выключение не
+                    // закрывает облако, а снимает галочку, и перед
+                    // следующей записью экран спросит заново. Подпись
+                    // раньше обещала блокировку, которой в коде нет.
                     subtitle: const Text(
-                      'Выключишь — «Выговорись» останется, но только текстом',
+                      'Выключишь — согласие снимется, и перед следующей '
+                      'записью «Волна» спросит заново',
                     ),
                   ),
                   _LinkRow(
                     icon: Icons.shield_outlined,
-                    accent: AppColors.sageDeep,
+                    accent: AppColors.marked,
                     title: 'Что происходит с данными',
                     subtitle: 'Коротко и без юридического языка',
                     onTap: () => context.push('/privacy'),
                   ),
                   _LinkRow(
                     icon: Icons.delete_outline_rounded,
-                    accent: AppColors.coral,
+                    accent: AppColors.sos,
                     title: 'Удалить все мои данные',
                     subtitle: 'Стереть всё с этого телефона, без возврата',
                     onTap: _confirmWipe,
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _Section(
+              title: 'Опросники',
+              subtitle: 'Короткие шкалы — свериться с собой, когда захочется.',
+              child: _LinkRow(
+                icon: Icons.fact_check_outlined,
+                accent: AppColors.marked,
+                title: 'Пройти опросник',
+                subtitle: 'PSS, PBI, CSI — когда захочется',
+                onTap: () => context.push('/questionnaire'),
               ),
             ),
             const SizedBox(height: 32),
@@ -248,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   TextStyle? _label(ThemeData theme) => theme.textTheme.bodySmall?.copyWith(
-        color: AppColors.terracotta,
+        color: AppColors.accentPress,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.4,
       );
@@ -275,15 +291,21 @@ class _Section extends StatelessWidget {
         color: AppColors.paperLift,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 6),
-          Text(subtitle, style: theme.textTheme.bodyMedium),
-          const SizedBox(height: 8),
-          child,
-        ],
+      // Прозрачный Material над фоном секции: без него ListTile/SwitchListTile
+      // рисуют ripple под заливкой paperLift и он не виден (Flutter 3.44 на это
+      // прямо ругается). Фон и вёрстка не меняются.
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.titleLarge),
+            const SizedBox(height: 6),
+            Text(subtitle, style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            child,
+          ],
+        ),
       ),
     );
   }
@@ -340,7 +362,7 @@ class _LinkRow extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),
@@ -434,7 +456,7 @@ class _AnchorList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: Material(
-            color: isSel ? accent.withValues(alpha: 0.18) : AppColors.cream,
+            color: isSel ? accent.withValues(alpha: 0.18) : AppColors.paper,
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: InkWell(
               onTap: () => onTap(a.id),
@@ -451,7 +473,7 @@ class _AnchorList extends StatelessWidget {
                   children: [
                     Icon(
                       isSel ? Icons.check_circle_rounded : Icons.circle_outlined,
-                      color: isSel ? accent : AppColors.textMuted,
+                      color: isSel ? accent : AppColors.inkQuiet,
                       size: 20,
                     ),
                     const SizedBox(width: 12),

@@ -23,6 +23,7 @@ class QuestionnaireScreen extends StatefulWidget {
 class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   late final Questionnaire q;
   final Map<int, int> _answers = {};
+  final _pageController = PageController();
   int _index = 0;
   bool _advancing = false;
   QuestionnaireResult? _result;
@@ -32,6 +33,12 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   void initState() {
     super.initState();
     q = questionnaireOf(widget.kind);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _selectAnswer(int value) {
@@ -49,11 +56,18 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     Future.delayed(const Duration(milliseconds: 280), () {
       if (!mounted) return;
       final wasLast = _index >= q.items.length - 1;
-      setState(() {
-        _advancing = false;
-        if (!wasLast) _index++;
-      });
-      if (wasLast) _finalise();
+      _advancing = false;
+      if (wasLast) {
+        _finalise();
+      } else if (AppMotion.reduced(context)) {
+        _pageController.jumpToPage(_index + 1);
+      } else {
+        // Плавный слайд к следующему вопросу. _index обновит onPageChanged.
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 460),
+          curve: Curves.easeInOutCubic,
+        );
+      }
     });
   }
 
@@ -72,7 +86,14 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   void _back() {
     if (_index > 0) {
-      setState(() => _index--);
+      if (AppMotion.reduced(context)) {
+        _pageController.jumpToPage(_index - 1);
+      } else {
+        _pageController.previousPage(
+          duration: const Duration(milliseconds: 460),
+          curve: Curves.easeInOutCubic,
+        );
+      }
     }
   }
 
@@ -84,11 +105,14 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       return _ResultScreen(result: _result!, previous: _previous);
     }
 
-    final item = q.items[_index];
     final progress = (_index + 1) / q.items.length;
 
     return Scaffold(
+      backgroundColor: AppColors.paperSunk,
       appBar: AppBar(
+        backgroundColor: AppColors.paperSunk,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () => context.pop(),
@@ -108,44 +132,81 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 5,
-                  backgroundColor:
-                      AppColors.textMuted.withValues(alpha: 0.18),
-                  valueColor: const AlwaysStoppedAnimation(AppColors.terracotta),
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Прогресс — тонкая линейка во всю ширину, заполняется терракотой.
+            // Редакторское «правило», а не material-полоска с округлениями.
+            LinearProgressIndicator(
+              value: progress,
+              minHeight: 3,
+              backgroundColor: AppColors.rule,
+              valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.axis, AppSpacing.smd, AppSpacing.axis, 0),
+              child: Text(
+                'Вопрос ${_index + 1} · ${q.items.length}'.toUpperCase(),
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: AppColors.inkQuiet),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Вопрос ${_index + 1} из ${q.items.length}',
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    item.text,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      height: 1.4,
+            ),
+            // Каждый вопрос — отдельная «страница». Переход между вопросами —
+            // плавный горизонтальный слайд (PageView), вёрстка страниц
+            // одинаковая, поэтому ничего не прыгает. Свайп руками отключён:
+            // листаем только ответом или кнопкой «Назад».
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (i) => setState(() => _index = i),
+                itemCount: q.items.length,
+                itemBuilder: (context, i) {
+                  final pageItem = q.items[i];
+                  return Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.axis,
+                        vertical: AppSpacing.lg,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Волна — знак «Волны» над вопросом: даёт блоку опору
+                          // и убирает пустоту сверху.
+                          const Icon(
+                            Icons.waves_rounded,
+                            color: AppColors.accent,
+                            size: 44,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          // Вопрос — «голос»: крупная антиква по центру.
+                          Text(
+                            pageItem.text,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineLarge
+                                ?.copyWith(height: 1.3),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          // Варианты — во всю ширину.
+                          SizedBox(
+                            width: double.infinity,
+                            child: _AnswerOptions(
+                              scale: q.scaleType,
+                              selected: _answers[pageItem.id],
+                              onTap: _selectAnswer,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
-              _AnswerOptions(
-                scale: q.scaleType,
-                selected: _answers[item.id],
-                onTap: _selectAnswer,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -200,7 +261,7 @@ class _AnswerOptions extends StatelessWidget {
               child: _BigOption(
                 label: 'Нет',
                 selected: selected == 0,
-                accent: AppColors.sage,
+                accent: AppColors.markedWash,
                 onTap: () => onTap(0),
               ),
             ),
@@ -209,7 +270,7 @@ class _AnswerOptions extends StatelessWidget {
               child: _BigOption(
                 label: 'Да',
                 selected: selected == 1,
-                accent: AppColors.coral,
+                accent: AppColors.sos,
                 onTap: () => onTap(1),
               ),
             ),
@@ -235,13 +296,14 @@ class _ScaleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: options.map((opt) {
         final isSel = selected == opt.$1;
         return Padding(
           padding: EdgeInsets.only(bottom: dense ? 6 : 8),
           child: Material(
             color: isSel
-                ? AppColors.terracotta.withValues(alpha: 0.18)
+                ? AppColors.accent.withValues(alpha: 0.18)
                 : AppColors.paperLift,
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: InkWell(
@@ -255,7 +317,7 @@ class _ScaleRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: isSel ? AppColors.terracotta : Colors.transparent,
+                    color: isSel ? AppColors.accent : AppColors.rule,
                     width: 1.5,
                   ),
                 ),
@@ -266,8 +328,8 @@ class _ScaleRow extends StatelessWidget {
                           ? Icons.check_circle_rounded
                           : Icons.circle_outlined,
                       color: isSel
-                          ? AppColors.terracotta
-                          : AppColors.textMuted,
+                          ? AppColors.accent
+                          : AppColors.inkQuiet,
                       size: 22,
                     ),
                     const SizedBox(width: 12),
@@ -305,12 +367,12 @@ class _BigOption extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 22),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.sm),
             border: Border.all(
-              color: selected ? accent : Colors.transparent,
-              width: 2,
+              color: selected ? accent : AppColors.rule,
+              width: 1.5,
             ),
           ),
           child: Center(
@@ -319,7 +381,7 @@ class _BigOption extends StatelessWidget {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
-                color: selected ? accent : AppColors.textPrimary,
+                color: selected ? accent : AppColors.inkBody,
               ),
             ),
           ),
@@ -336,23 +398,21 @@ class _ResultScreen extends StatelessWidget {
   /// Предыдущее прохождение этого же опросника, если оно было.
   final QuestionnaireRecord? previous;
 
-  ({Color color, String emoji, String title, String body}) _zoneCopy(
+  ({Color color, String title, String body}) _zoneCopy(
     QuestionnaireKind kind,
     ResultZone zone,
   ) {
     switch (zone) {
       case ResultZone.low:
         return (
-          color: AppColors.sageDeep,
-          emoji: '🌿',
+          color: AppColors.marked,
           title: 'Базовое равновесие',
           body: 'Ты держишься. Это не значит, что всё легко — это значит, '
               'что внутренние ресурсы пока есть. Продолжай возвращаться к древу.',
         );
       case ResultZone.medium:
         return (
-          color: AppColors.saffron,
-          emoji: '⚖️',
+          color: AppColors.dawn,
           title: 'Видны тревожные ноты',
           body: 'Часть нагрузки уже ощущается как тяжесть. '
               'Это сигнал — не приговор. Стоит начать с малого: '
@@ -360,8 +420,7 @@ class _ResultScreen extends StatelessWidget {
         );
       case ResultZone.high:
         return (
-          color: AppColors.coral,
-          emoji: '⚠️',
+          color: AppColors.sos,
           title: 'Нужна живая помощь',
           body: 'Это уже не «просто устала». '
               'Сейчас тебе нужно не приложение, а человек. '
@@ -410,18 +469,13 @@ class _ResultScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(zone.emoji,
-                            style: const TextStyle(fontSize: 32)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            zone.title,
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                        ),
-                      ],
+                    // Эмодзи-значки зон убраны: DESIGN.md их запрещает,
+                    // а знак предупреждения вводил ещё и семантику
+                    // warning, которой в эмоциональном контуре нет.
+                    // Зону называют цвет рамки и сам заголовок.
+                    Text(
+                      zone.title,
+                      style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 12),
                     Text(zone.body, style: theme.textTheme.bodyLarge),
@@ -440,10 +494,10 @@ class _ResultScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.cream,
+                  color: AppColors.paper,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: AppColors.textMuted.withValues(alpha: 0.2),
+                    color: AppColors.inkQuiet.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Text(
@@ -468,7 +522,7 @@ class _ResultScreen extends StatelessWidget {
   List<Widget> _highZoneActions(BuildContext context) => [
         _ActionButton(
           icon: Icons.phone_in_talk_rounded,
-          color: AppColors.coral,
+          color: AppColors.sos,
           title: 'Позвонить на телефон доверия',
           subtitle: '$crisisPhoneLabel · бесплатно, анонимно',
           onTap: () => openExternal(context, crisisPhoneUrl),
@@ -476,7 +530,7 @@ class _ResultScreen extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionButton(
           icon: Icons.note_alt_rounded,
-          color: AppColors.terracotta,
+          color: AppColors.accent,
           title: 'Подготовиться к встрече с психологом',
           subtitle: '3 коротких вопроса — и ничего не забудешь',
           onTap: () {
@@ -486,7 +540,7 @@ class _ResultScreen extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionButton(
           icon: Icons.menu_book_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Найти онлайн-психолога',
           subtitle: 'Каталоги проверенных сервисов',
           onTap: () {
@@ -498,7 +552,7 @@ class _ResultScreen extends StatelessWidget {
   List<Widget> _mediumZoneActions(BuildContext context) => [
         _ActionButton(
           icon: Icons.favorite_rounded,
-          color: AppColors.saffron,
+          color: AppColors.dawn,
           title: 'Открыть фразы поддержки',
           subtitle: 'Что почитать сейчас',
           onTap: () {
@@ -508,7 +562,7 @@ class _ResultScreen extends StatelessWidget {
         const SizedBox(height: 10),
         _ActionButton(
           icon: Icons.air_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Сделать одну SOS-технику',
           subtitle: 'Дыхание, заземление, ладонь на сердце',
           onTap: () {
@@ -520,7 +574,7 @@ class _ResultScreen extends StatelessWidget {
   List<Widget> _lowZoneActions(BuildContext context) => [
         _ActionButton(
           icon: Icons.eco_rounded,
-          color: AppColors.sageDeep,
+          color: AppColors.marked,
           title: 'Вернуться к древу',
           subtitle: 'Продолжай в своём ритме',
           onTap: () {
@@ -550,17 +604,17 @@ class _ComparisonCard extends StatelessWidget {
     final (IconData icon, Color color, String text) = switch (delta) {
       < -_noise => (
           Icons.trending_down_rounded,
-          AppColors.sageDeep,
+          AppColors.marked,
           'Стало легче, чем в прошлый раз',
         ),
       > _noise => (
           Icons.trending_up_rounded,
-          AppColors.coral,
+          AppColors.sos,
           'Тяжелее, чем в прошлый раз',
         ),
       _ => (
           Icons.trending_flat_rounded,
-          AppColors.textSecondary,
+          AppColors.inkSoft,
           'Примерно так же, как в прошлый раз',
         ),
     };
@@ -655,7 +709,7 @@ class _ActionButton extends StatelessWidget {
               const Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: AppColors.inkQuiet,
               ),
             ],
           ),

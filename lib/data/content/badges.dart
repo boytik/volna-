@@ -54,7 +54,7 @@ const allBadges = <Badge>[
     title: 'Первый шаг',
     description: 'Ты сделала первый утренний или вечерний квест.',
     icon: Icons.eco_rounded,
-    color: AppColors.sageDeep,
+    color: AppColors.marked,
     unlock: _firstStep,
   ),
   Badge(
@@ -63,7 +63,7 @@ const allBadges = <Badge>[
     description: 'Ты впервые отметила, что SOS-техника помогла. '
         'Теперь она в твоём наборе.',
     icon: Icons.favorite_rounded,
-    color: AppColors.terracotta,
+    color: AppColors.accent,
     unlock: _firstSos,
   ),
   Badge(
@@ -72,7 +72,7 @@ const allBadges = <Badge>[
     description: 'Ты написала свою первую тревогу в конверт. '
         'Иногда отложить — лучше, чем решать сейчас.',
     icon: Icons.mail_rounded,
-    color: AppColors.coral,
+    color: AppColors.sos,
     unlock: _firstEnvelope,
   ),
   // Здесь был знак «Три дня подряд» — награда за стрик. Его невозможно
@@ -94,7 +94,7 @@ const allBadges = <Badge>[
     description: 'Семь дней ты возвращалась. Не каждый день идеально — '
         'но ты приходила.',
     icon: Icons.spa_rounded,
-    color: AppColors.sage,
+    color: AppColors.markedWash,
     unlock: _weekWithMe,
   ),
   Badge(
@@ -112,7 +112,7 @@ const allBadges = <Badge>[
     description: 'Ты заметила три хороших события за день. '
         'Внимание к маленьким радостям — это тренировка.',
     icon: Icons.auto_awesome_rounded,
-    color: AppColors.saffron,
+    color: AppColors.dawn,
     unlock: _threeGoodStarter,
   ),
   Badge(
@@ -122,7 +122,7 @@ const allBadges = <Badge>[
         'Большинство мыслей через сутки звучат иначе — '
         'ты убедилась в этом сама.',
     icon: Icons.delete_outline_rounded,
-    color: AppColors.sage,
+    color: AppColors.markedWash,
     unlock: _discarded,
   ),
   Badge(
@@ -131,7 +131,7 @@ const allBadges = <Badge>[
     description: 'Десять капель — древо стало саженцем. '
         'Это значит: ты не один день случайно зашла, ты выбираешь приходить.',
     icon: Icons.park_rounded,
-    color: AppColors.sageDeep,
+    color: AppColors.marked,
     unlock: _rootsDeeper,
   ),
   Badge(
@@ -140,7 +140,7 @@ const allBadges = <Badge>[
     description: 'Ты открыла раздел связи со специалистом. '
         'Просить помощи — это сила, не слабость.',
     icon: Icons.support_agent_rounded,
-    color: AppColors.terracotta,
+    color: AppColors.accent,
     unlock: _seeksHelp,
   ),
   Badge(

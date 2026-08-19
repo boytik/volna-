@@ -80,8 +80,8 @@ class _QuestScreenState extends State<QuestScreen> {
   Widget _buildQuest(ThemeData theme) {
     final quest = QuestPicker.pickToday(widget.slot);
     final accent = widget.slot == QuestSlot.morning
-        ? AppColors.saffron
-        : AppColors.sageDeep;
+        ? AppColors.dawn
+        : AppColors.marked;
     final label = widget.slot == QuestSlot.morning
         ? 'УТРЕННИЙ ШАГ'
         : 'ВЕЧЕРНИЙ РИТУАЛ';
@@ -157,13 +157,13 @@ class _QuestScreenState extends State<QuestScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.sage.withValues(alpha: 0.25),
+              color: AppColors.markedWash.withValues(alpha: 0.25),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.check_rounded,
               size: 64,
-              color: AppColors.sageDeep,
+              color: AppColors.marked,
             ),
           ),
         ),
@@ -179,21 +179,21 @@ class _QuestScreenState extends State<QuestScreen> {
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyLarge?.copyWith(
             fontStyle: FontStyle.italic,
-            color: AppColors.textSecondary,
+            color: AppColors.inkSoft,
           ),
         ),
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.peachSoft,
+            color: AppColors.paperSunk,
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.eco_rounded, color: AppColors.sageDeep, size: 18),
+              const Icon(Icons.eco_rounded, color: AppColors.marked, size: 18),
               const SizedBox(width: 8),
               Text(
                 '+1 капля для древа',
