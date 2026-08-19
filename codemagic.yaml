@@ -69,6 +69,7 @@ workflows:
 
       groups:
         - azure
+        - signing
 
       vars:
         BUNDLE_ID: "com.pavelhegai.volna"
@@ -100,8 +101,16 @@ workflows:
           # выпускает под него сертификат и профиль. Apple разрешает до
           # трёх сертификатов распространения на команду.
           keychain initialize
+          # --certificate-key обязателен. Без него инструмент скачивает
+          # существующий сертификат команды и спотыкается:
+          # «Cannot save Signing Certificates without certificate private
+          # key» — приватный ключ остался у того, кто сертификат выпускал,
+          # Apple копий не отдаёт. С нашим ключом --create выпускает
+          # отдельный сертификат, которым мы и подписываем.
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE --create
+            --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+            --create
           keychain add-certificates
           xcode-project use-profiles
 
@@ -219,7 +228,14 @@ workflows:
       - *write_secrets
       - *deps
       - name: Профили
-        script: xcode-project use-profiles
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Сборка IPA
         script: |
           flutter build ipa --release \
