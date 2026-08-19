@@ -34,51 +34,42 @@ if ! grep -q "azureOpenAiApiKey = '.\+'" lib/config/secrets.dart 2>/dev/null; th
   exit 1
 fi
 
-# Номер сборки: берём последний из TestFlight и увеличиваем. Так вторая
-# заливка не отбивается по дублю.
-echo "→ узнаю последний номер сборки в TestFlight"
-LATEST=$(xcrun altool --list-builds \
-  --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID" --output-format json 2>/dev/null \
-  | python3 -c "
-import json,sys
-try:
-    d=json.load(sys.stdin)
-    ns=[int(b['buildVersion']) for p in d.get('builds',[]) for b in [p] if str(b.get('buildVersion','')).isdigit()]
-    print(max(ns) if ns else 0)
-except Exception:
-    print(0)
-" || echo 0)
-BUILD=$((LATEST + 1))
+# Номер сборки берём из pubspec (часть после «+»), с возможностью
+# переопределить: BUILD=42 ./tool/testflight.sh
+# Apple отбивает повторную заливку с тем же номером — тогда просто
+# подними «+N» в pubspec.yaml.
 NAME=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
-echo "  версия $NAME, сборка $BUILD (в TestFlight было $LATEST)"
+BUILD="${BUILD:-$(grep '^version:' pubspec.yaml | cut -d'+' -f2)}"
+echo "→ версия $NAME, сборка $BUILD"
 
 echo "→ проверки"
 flutter analyze
 flutter test
 
-echo "→ собираю IPA"
-flutter build ipa --release \
-  --build-name="$NAME" \
-  --build-number="$BUILD" \
-  --export-options-plist=/dev/null 2>/dev/null || true
+echo "→ собираю архив"
+# Через xcodebuild, а не `flutter build ipa`: последний не умеет
+# принимать ключ App Store Connect, а без него на этой машине нечем
+# подписать — сертификата распространения команды заказчика здесь нет.
+# С -allowProvisioningUpdates и ключом Xcode выпустит сертификат сам и
+# оставит приватный ключ в локальной связке.
+ARCHIVE="build/ios/archive/Runner.xcarchive"
+rm -rf "$ARCHIVE"
+xcodebuild archive \
+  -workspace ios/Runner.xcworkspace \
+  -scheme Runner \
+  -configuration Release \
+  -archivePath "$ARCHIVE" \
+  -destination 'generic/platform=iOS' \
+  -allowProvisioningUpdates \
+  -authenticationKeyPath "$KEY_PATH" \
+  -authenticationKeyID "$KEY_ID" \
+  -authenticationKeyIssuerID "$ISSUER_ID" \
+  FLUTTER_BUILD_NAME="$NAME" \
+  FLUTTER_BUILD_NUMBER="$BUILD"
 
-# flutter build ipa без готового export plist оставляет .xcarchive —
-# экспортируем сами, чтобы xcodebuild мог выпустить профиль по ключу.
-ARCHIVE=$(ls -dt build/ios/archive/*.xcarchive 2>/dev/null | head -1)
-if [ -z "$ARCHIVE" ]; then
+if [ ! -d "$ARCHIVE" ]; then
   echo "Архив не собрался — смотри вывод выше"; exit 1
 fi
-
-cat > /tmp/volna_export.plist <<PLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>method</key><string>app-store-connect</string>
-  <key>teamID</key><string>${TEAM_ID}</string>
-  <key>destination</key><string>upload</string>
-  <key>uploadSymbols</key><true/>
-</dict></plist>
-PLIST
 
 echo "→ экспортирую и заливаю в TestFlight"
 xcodebuild -exportArchive \

@@ -70,9 +70,8 @@ workflows:
       groups:
         - azure
 
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.pavelhegai.volna
+      vars:
+        BUNDLE_ID: "com.pavelhegai.volna"
 
     triggering:
       events:
@@ -88,8 +87,23 @@ workflows:
       - *analyze
       - *test
 
-      - name: Прописать профили в Xcode-проект
-        script: xcode-project use-profiles
+      - name: "Подпись: выпустить сертификат и профиль, прописать в проект"
+        script: |
+          # Готовый блок `ios_signing` здесь не годится: он только ИЩЕТ
+          # профиль под уже доступный сертификат. В команде заказчика
+          # единственный сертификат распространения выпущен на машине
+          # владельца, и его приватный ключ Apple никому не отдаёт —
+          # Codemagic подписать им не может и отвечает
+          # «No matching profiles found», даже когда профиль существует.
+          #
+          # `--create` решает это: генерирует собственный приватный ключ,
+          # выпускает под него сертификат и профиль. Apple разрешает до
+          # трёх сертификатов распространения на команду.
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
 
       - name: Собрать IPA
         script: |
